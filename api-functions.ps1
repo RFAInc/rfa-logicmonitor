@@ -43,7 +43,7 @@ function Invoke-LomoApi() {
         Method = $httpVerb
         Headers = $httpHeaders
     }
-    if ($httpVerb -ne "GET"){$rest.Body = $httpBody}
+    if ($httpVerb -ne "GET"){$request.Body = $httpBody}
 
     <# Make request & retry if failed due to rate limiting #>
     $Stoploop = $false
