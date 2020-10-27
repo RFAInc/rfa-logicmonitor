@@ -32,17 +32,25 @@ function Invoke-LomoApi() {
     $signature = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(([System.BitConverter]::ToString($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($requestVars))) -replace '-').ToLower()))
     <# Construct Headers #>
     $auth = 'LMv1 ' + $accessId + ':' + $signature + ':' + $epoch
-    $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-    $headers.Add("Authorization", $auth)
-    $headers.Add("Content-Type", 'application/json')
-    $headers.Add("X-version", $version)
+    $httpHeaders = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+    $httpHeaders.Add("Authorization", $auth)
+    $httpHeaders.Add("Content-Type", 'application/json')
+    $httpHeaders.Add("X-version", $version)
+
+    <# Construct Request #>
+    $request = @{
+        Uri = $url
+        Method = $httpVerb
+        Headers = $httpHeaders
+    }
+    if ($httpVerb -ne "GET"){$rest.Body = $httpBody}
 
     <# Make request & retry if failed due to rate limiting #>
     $Stoploop = $false
     do {
         try {
             <# Make Request #>
-            $response = Invoke-RestMethod -Uri $url -Method $httpVerb -Body $httpBody -Header $headers
+            $response = Invoke-RestMethod @request
             $Stoploop = $true
         }
         catch {
@@ -50,7 +58,7 @@ function Invoke-LomoApi() {
                 { $_.Exception.Response.StatusCode.value__ -eq 429 } {
                     Write-Host "Request exceeded rate limit, retrying in 60 seconds..."
                     Start-Sleep -Seconds 60
-                    $response = Invoke-RestMethod -Uri $url -Method $httpVerb -Body $httpBody -Header $headers
+                    $response = Invoke-RestMethod @request
                 }
                 default {
                     write-host $_
