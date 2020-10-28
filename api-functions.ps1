@@ -61,11 +61,11 @@ function Invoke-LomoApi() {
                     $response = Invoke-RestMethod @request
                 }
                 default {
-                    write-host $_
+                    Write-Host $_
                     $Stoploop = $true
                 }
             }
         }
-    } While ($Stoploop -eq $false)
-    Return $response
+    } while ($Stoploop -eq $false)
+    return $response
 }
