@@ -5,58 +5,59 @@
   <errmsg>OK</errmsg>
   <interval>0</interval>
     <entry type="predatasource">
-        <version>1603814103</version>
-        <name>LMActions_RunPropertySources</name>
-        <displayedas>LMActions_RunPropertySources</displayedas>
+        <version>1597279451</version>
+        <name>WinUserLogonStatus</name>
+        <displayedas>Logon Status</displayedas>
         <description></description>
         <collector>script</collector>
-        <hasMultiInstances>false</hasMultiInstances>
-        <schedule>600</schedule>
-        <appliesTo>system.displayname =~ &#34;RFALABTECHWEBCC&#34;</appliesTo>
-        <wildcardauto>false</wildcardauto>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>user.monitor &#38;&#38;
+false()</appliesTo>
+        <wildcardauto>true</wildcardauto>
         <wildcardpersist>false</wildcardpersist>
-        <wildcardlinuxscript></wildcardlinuxscript>
-        <wildcardlinuxcmdline></wildcardlinuxcmdline>
-        <wildcardwinscript></wildcardwinscript>
-        <wildcardwincmdline></wildcardwincmdline>
-        <wildcardgroovyscript></wildcardgroovyscript>
-        <wildcardschedule>1440</wildcardschedule>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>function Query-Users {
+    $obj = quser | ForEach-Object -Process { $_ -replace &#39;\s{2,}&#39;,&#39;,&#39; -replace &#39;&#62;&#39;} |  ConvertFrom-Csv
+    Write-Output $obj
+}
+
+$result = Query-Users
+$linusers = $result.USERNAME
+$monuser = &#39;##USER.MONITOR##&#39;
+
+if ($monuser -notin $linusers){
+    Write-Host &#34;$($monuser) is not logged in##$monuser is not logged in&#34;    
+}</wildcardgroovyscript>
+        <wildcardschedule>0</wildcardschedule>
         <wildcarddisable>false</wildcarddisable>
-        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
         <agdmethod>none</agdmethod>
         <agdparams></agdparams>
-        <group>LMActions</group>
+        <group>Windows</group>
         <tags></tags>
         <technology></technology>
-        <adlist><![CDATA[{"agdmethod":"none","agdparams":"","id":0,"filters":[],"params":{}}]]></adlist>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"function Query-Users {\n    $obj = quser | ForEach-Object -Process { $_ -replace '\\s{2,}',',' -replace '>'} |  ConvertFrom-Csv\n    Write-Output $obj\n}\n\n$result = Query-Users\n$linusers = $result.USERNAME\n$monuser = '##USER.MONITOR##'\n\nif ($monuser -notin $linusers){\n    Write-Host \"$($monuser) is not logged in##$monuser is not logged in\"    \n}"}}]]></adlist>
         <schemaVersion>2</schemaVersion>
         <dataSourceType>1</dataSourceType>
         <attributes>
         <attribute>
             <name>scripttype</name>
-            <value>powerShell</value>
+            <value>embed</value>
             <comment></comment>
         </attribute>
         <attribute>
             <name>scriptgroovy</name>
-            <value>(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-logicmonitor/main/api-functions.ps1&#39;) | Invoke-Expression
+            <value>import com.santaba.agent.groovyapi.expect.Expect;
+import com.santaba.agent.groovyapi.snmp.Snmp;
+import com.santaba.agent.groovyapi.http.*;
+import com.santaba.agent.groovyapi.jmx.*;
+import org.xbill.DNS.*;
 
-$accessId = &#39;##api.user##&#39;
-$accessKey = &#39;##api.pass##&#39;
-$tenantName = &#39;##api.account##&#39;
-
-$resourcePath = &#34;/setting/propertyrules&#34;
-$queryparams = &#39;?size=1000&#38;fields=id, name, group&#38;filter=group:&#34;RFA Custom&#34;&#39;
-$ps_ids = (Invoke-LomoApi -tenantName $tenantName -accessId $accessId -accessKey $accessKey -httpverb &#34;GET&#34; -resourcePath $resourcePath -queryParams $queryParams).items.id
-
-Write-Output &#34;##DEBUG##PS_UPDATE_QUEUE=$($ps_ids -Join(&#39;, &#39;))&#34;
-
-foreach ($i in $ps_ids) {
-    $resourcePath = &#34;/setting/propertyrules/$i/schedule&#34;
-    $queryParams = &#34;?limit=1000&#34;
-    $httpBody = &#34;{}&#34;
-    $null = Invoke-LomoApi -tenantName $tenantName -accessId $accessId -accessKey $accessKey -httpVerb &#34;POST&#34; -resourcePath $resourcePath -queryparams $queryparams -httpBody $httpBody
-}</value>
+println &#34;Alert = 1&#34;</value>
             <comment></comment>
         </attribute>
         <attribute>
@@ -82,13 +83,13 @@ foreach ($i in $ps_ids) {
         </attributes>
         <datapoints>
         <datapoint>
-            <name>ActionResult</name>
-            <dataType>4</dataType>
+            <name>Alert</name>
+            <dataType>7</dataType>
             <type>2</type>
-            <postprocessormethod>none</postprocessormethod>
-            <postprocessorparam></postprocessorparam>
-            <usevalue>exitCode</usevalue>
-            <alertexpr></alertexpr>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>Alert</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr>= 1 1</alertexpr>
             <alertmissing>1</alertmissing>
             <alertsubject></alertsubject>
             <alertbody></alertbody>
@@ -97,7 +98,7 @@ foreach ($i in $ps_ids) {
             <warnadadvsetting></warnadadvsetting>
             <erroradadvsetting></erroradadvsetting>
             <criticaladadvsetting></criticaladadvsetting>
-            <description></description>
+            <description>value is 1 when alert is present</description>
             <maxvalue></maxvalue>
             <minvalue></minvalue>
             <userparam1></userparam1>

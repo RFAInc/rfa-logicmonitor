@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1605718327</version>
+        <name>Rubrik_ProtectionTasksDetailsReport</name>
+        <displayedas>Backup Report</displayedas>
+        <description></description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isRubrik()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$hostname = &#34;##HOST##&#34;
+$user = &#34;##rubrik.user##&#34;
+$pass = &#34;##rubrik.pass##&#34;
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+# Load modules from github
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/rubrik-functions.ps1&#39;) | Invoke-Expression
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+# Polls Rubrik for Object Protection Data
+$Data = Get-RubrikMonitoringObject -Server $hostname -User $user -Pass $pass | Where-Object {$_.TaskType -eq &#39;Backup&#39;}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Discovery Output
+foreach ($i in $Data) {
+    $instance = ($i.ObjectId) -replace(&#39;:&#39;,&#39;&#39;)
+    Write-Host &#34;$($instance)##$($i.ObjectName)##$($i.SlaDomain)####auto.rubrik.TaskType=$($i.TaskType)&#38;auto.rubrik.ObjectId=$($i.ObjectId)&#38;auto.rubrik.ObjectLinkingId=$($i.ObjectLinkingId)&#38;auto.rubrik.ObjectName=$($i.ObjectName)&#38;auto.rubrik.ObjectState=$($i.ObjectState)&#38;auto.rubrik.SlaDomainId=$($i.SlaDomainId)&#38;auto.rubrik.SlaDomain=$($i.SlaDomain)&#38;auto.rubrik.SlaDomainState=$($i.SlaDomainState)&#38;auto.rubrik.LastStartTime=$($i.StartTime)&#38;auto.rubrik.LastEndTime=$($i.EndTime)&#38;auto.rubrik.LastQueuedTime=$($i.QueuedTime)&#38;auto.rubrik.FrequencyConfig=$($i.FrequencyConfig)&#38;auto.rubrik.WindowConfig=$($i.WindowConfig)&#38;auto.rubrik.TaskStatus=$($i.TaskStatus)&#38;auto.rubrik.FailureReason=$($i.FailureReason)&#34;
+}
+</wildcardgroovyscript>
+        <wildcardschedule>15</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>ilp</agdmethod>
+        <agdparams>auto.Rubrik.SlaDomain</agdparams>
+        <group>Rubrik</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.Rubrik.SlaDomain","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n# Loads credentials from device properties\n$hostname = \"##HOST##\"\n$user = \"##rubrik.user##\"\n$pass = \"##rubrik.pass##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n# Load modules from github\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/rubrik-functions.ps1') | Invoke-Expression\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\n# Polls Rubrik for Object Protection Data\n$Data = Get-RubrikMonitoringObject -Server $hostname -User $user -Pass $pass | Where-Object {$_.TaskType -eq 'Backup'}\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $Data) {\n    $instance = ($i.ObjectId) -replace(':','')\n    Write-Host \"$($instance)##$($i.ObjectName)##$($i.SlaDomain)####auto.rubrik.TaskType=$($i.TaskType)&auto.rubrik.ObjectId=$($i.ObjectId)&auto.rubrik.ObjectLinkingId=$($i.ObjectLinkingId)&auto.rubrik.ObjectName=$($i.ObjectName)&auto.rubrik.ObjectState=$($i.ObjectState)&auto.rubrik.SlaDomainId=$($i.SlaDomainId)&auto.rubrik.SlaDomain=$($i.SlaDomain)&auto.rubrik.SlaDomainState=$($i.SlaDomainState)&auto.rubrik.LastStartTime=$($i.StartTime)&auto.rubrik.LastEndTime=$($i.EndTime)&auto.rubrik.LastQueuedTime=$($i.QueuedTime)&auto.rubrik.FrequencyConfig=$($i.FrequencyConfig)&auto.rubrik.WindowConfig=$($i.WindowConfig)&auto.rubrik.TaskStatus=$($i.TaskStatus)&auto.rubrik.FailureReason=$($i.FailureReason)\"\n}\n"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>powerShell</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$hostname = &#34;##HOST##&#34;
+$user = &#34;##rubrik.user##&#34;
+$pass = &#34;##rubrik.pass##&#34;
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+# Load modules from github
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/rubrik-functions.ps1&#39;) | Invoke-Expression
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+# Polls Rubrik for Object Protection Data
+$Data = Get-RubrikMonitoringObject -Server $hostname -User $user -Pass $pass | Where-Object {$_.TaskType -eq &#39;Backup&#39;}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Ask support for all possible status values
+$StatusMap = @{
+    &#34;Succeeded&#34; = 0
+    &#34;Failed&#34; = 1
+}
+
+# Collection Output
+foreach ($i in $Data) {
+    # Look into using the time reported by the rubrik cluster. Assuming the APi returns this information.
+    $CurrentESTDate = (Invoke-RestMethod -Uri &#34;http://worldclockapi.com/api/json/est/now&#34; -Method &#34;Get&#34;).currentDateTime
+    $LastBackupDate = $i.EndTime
+    $HoursSinceLastBackup = (New-TimeSpan -Start ($LastBackupDate) -End ($CurrentESTDate)).TotalHours
+    $LastBackupStatus = $StatusMap.($i.TaskStatus)
+    $instance = ($i.ObjectId) -replace(&#39;:&#39;,&#39;&#39;)
+    Write-Output &#34;$instance.LastBackupStatus=$($LastBackupStatus)&#34;
+    Write-Output &#34;$instance.HoursSinceLastBackup=$($HoursSinceLastBackup)&#34;
+}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>LastBackupStatus</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.LastBackupStatus</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>HoursSinceLastBackup</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.HoursSinceLastBackup</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

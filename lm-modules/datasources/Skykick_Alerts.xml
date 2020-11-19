@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1605554869</version>
+        <name>Skykick_Alerts</name>
+        <displayedas>Alerts</displayedas>
+        <description></description>
+        <collector>script</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isSkykick()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+$User = &#34;##skykick.user##&#34;
+$Pass = &#34;##skykick.pass##&#34;
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/skykick-functions.ps1&#39;) | Invoke-Expression
+
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+$Alerts = Get-SkykickAlerts -User $User -Key $Pass | Where-Object {$_.status -eq &#39;Active&#39;}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Discovery Output
+foreach ($i in $Alerts){
+    Write-Output &#34;$($i.alertid)##$($i.subject)##$($i.customername)####auto.skykick.customername=$($i.customername)&#38;auto.skykick.category=$($i.category)&#38;auto.skykick.subcategory=$($i.subcategory)&#38;auto.skykick.descriptionhtml=$($i.descriptionhtml)&#38;auto.skykick.created=$($i.created)&#38;auto.skykick.backupserviceid=$($i.backupserviceid)&#38;auto.skykick.orderid=$($i.orderid)&#38;auto.skykick.workitemid=$($i.workitemid)&#38;auto.skykick.customername=$($i.customername)&#38;auto.skykick.workitemtype=$($i.workitemtype)&#38;auto.skykick.partnerid=$($i.partnerid)&#38;auto.skykick.type=$($i.type)&#34;
+}</wildcardgroovyscript>
+        <wildcardschedule>15</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>ilp</agdmethod>
+        <agdparams>auto.skykick.customername</agdparams>
+        <group>Skykick</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.skykick.customername","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n$User = \"##skykick.user##\"\n$Pass = \"##skykick.pass##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/skykick-functions.ps1') | Invoke-Expression\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\n$Alerts = Get-SkykickAlerts -User $User -Key $Pass | Where-Object {$_.status -eq 'Active'}\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $Alerts){\n    Write-Output \"$($i.alertid)##$($i.subject)##$($i.customername)####auto.skykick.customername=$($i.customername)&auto.skykick.category=$($i.category)&auto.skykick.subcategory=$($i.subcategory)&auto.skykick.descriptionhtml=$($i.descriptionhtml)&auto.skykick.created=$($i.created)&auto.skykick.backupserviceid=$($i.backupserviceid)&auto.skykick.orderid=$($i.orderid)&auto.skykick.workitemid=$($i.workitemid)&auto.skykick.customername=$($i.customername)&auto.skykick.workitemtype=$($i.workitemtype)&auto.skykick.partnerid=$($i.partnerid)&auto.skykick.type=$($i.type)\"\n}"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>powerShell</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+$User = &#34;##skykick.user##&#34;
+$Pass = &#34;##skykick.pass##&#34;
+$Subscription = &#39;##WILDVALUE##&#39;
+
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/skykick-functions.ps1&#39;) | Invoke-Expression
+
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+#Collection Output</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>ArchiveSizeGB</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.ArchiveSizeGB</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>HoursSinceLastBackup</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.HoursSinceLastBackup</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr>&#62;= 24 48</alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

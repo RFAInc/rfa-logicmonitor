@@ -5,9 +5,9 @@
   <errmsg>OK</errmsg>
   <interval>0</interval>
     <entry type="predatasource">
-        <version>1603912434</version>
-        <name>Unitrends_ InProgress_Backups</name>
-        <displayedas>Unitrends: In Progress Backups</displayedas>
+        <version>1605514382</version>
+        <name>Unitrends_InProgressBackupJobs</name>
+        <displayedas>In Progress Backup Jobs</displayedas>
         <description></description>
         <collector>batchscript</collector>
         <hasMultiInstances>true</hasMultiInstances>
@@ -20,8 +20,6 @@
         <wildcardwinscript>ad_script</wildcardwinscript>
         <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
         <wildcardgroovyscript>&#60;#
-.SYNOPSIS
-    This script will reach out to each Unitrends appliance configured in ADI and collect data to build a report. 
 .NOTES
     Author:     Andy Escolastico
 #&#62;
@@ -48,6 +46,7 @@ try {
     # Collect Job data
     $JobHistory = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/jobs/history/backup&#34;).data
     $JobConfigs = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/joborders&#34;).data
+    $ApplianceiTime = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/date-time&#34;)
     # Add server ip and frequency datapoint to Job objects
     foreach ($i in $JobHistory) {
         $Frequency = $JobConfigs | Where-Object {$_.name -eq $i.name} | Select-Object calendar_str
@@ -113,6 +112,9 @@ foreach ($i in $Assets) {
 }
 $UnassignedUniAssets = $arr
 
+# Normalize Server Time
+$ApplianceiTime = &#34;$($ApplianceiTime.month)/$($ApplianceiTime.day)/$($ApplianceiTime.year) $($ApplianceiTime.hour):$($ApplianceiTime.minute):$($ApplianceiTime.second)&#34;
+
 #-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
 
 # Discovery Output
@@ -121,13 +123,13 @@ foreach ($i in $ActiveUniAssets){
 }</wildcardgroovyscript>
         <wildcardschedule>15</wildcardschedule>
         <wildcarddisable>false</wildcarddisable>
-        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
         <agdmethod>ilp</agdmethod>
         <agdparams>auto.unitrends.BackupStatus</agdparams>
         <group>Unitrends</group>
         <tags></tags>
         <technology></technology>
-        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.unitrends.BackupStatus","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"<#\n.SYNOPSIS\n    This script will reach out to each Unitrends appliance configured in ADI and collect data to build a report. \n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n$UniServer = \"##hostname##\"\n$UniUser = \"##uni.user##\"\n$UniPass = \"##uni.pass##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/unitrends-functions.ps1') | Invoke-Expression\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\ntry {\n    # Connect to Unitrends server and retrieve auth token\n    $AuthToken = (Get-UniSession -Server $UniServer -User $UniUser -Pass $UniPass).auth_token\n    # Collect Job data\n    $JobHistory = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/jobs/history/backup\").data\n    $JobConfigs = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/joborders\").data\n    # Add server ip and frequency datapoint to Job objects\n    foreach ($i in $JobHistory) {\n        $Frequency = $JobConfigs | Where-Object {$_.name -eq $i.name} | Select-Object calendar_str\n        $Frequency = $Frequency.calendar_str | Where-Object {$_ -Notlike \"*/*/*\"}\n        if (@($Frequency).Count -gt 1){\n            $Frequency = $Frequency -Join \"; \"\n        }\n        $i | Add-Member -NotePropertyName \"frequency\" -NotePropertyValue $Frequency\n        $i | Add-Member -NotePropertyName \"system_ip\" -NotePropertyValue $UniServer\n    }\n    # Collect Asset-Source data\n    $Sources = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/assets\").data\n    # Build Asset Custom Objects\n    $Assets = @()\n    foreach ($x in $Sources) {\n        foreach ($y in $x.children){\n            $obj = [PSCustomObject]@{\n                Asset = $y.name\n                Source = $x.name\n            }\n            $Assets += $obj\n        }\n    }    \n} catch {\n    Write-Output \"Could not connect to $UniServer. Check Credentials or API access.\"\n}\n\n# Builds Objects for Unnasigned Assets\n$arr = @()\nforeach ($x in $JobHistory){\n    foreach ($y in $x.backups){\n        $obj = [PSCustomObject]@{\n            Asset = $y.asset_name\n            Source = $y.client_name\n            Server = $x.system_ip\n            Appliance = $x.system_name\n            JobName = $x.name\n            JobType = $x.type\n            JobApp = $x.app_name\n            JobFrequency = $x.frequency\n            BackupStatus = $y.status\n            BackupStart = [DateTime]$y.start_time\n            BackupType = $y.mode\n            BackupSize = $y.size\n            BackupID = $y.backup_id\n        }\n        $arr += $obj\n    }  \n}\n$AssignedUniAssets = $arr | Where-Object {($_.BackupStatus -ne \"Active\") -and ($_.BackupStatus -ne \"Queued\")} | Group-Object Asset | Foreach-Object {$_.Group | Sort-Object BackupStart | Select-Object -Last 1}\n$ActiveUniAssets = $arr | Where-Object {($_.BackupStatus -eq \"Active\") -or ($_.BackupStatus -eq \"Queued\")}\n\n# Builds Objects for Unnasigned Assets\n$arr = @()\nforeach ($i in $Assets) {    \n    if ($i.Asset -notin $AssignedUniAssets.Asset) {\n        $obj = [PSCustomObject]@{\n            Asset = $i.Asset\n            Source = $i.Source\n        }\n        $arr += $obj\n    }\n}\n$UnassignedUniAssets = $arr\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $ActiveUniAssets){\n    Write-Output \"$(($i.Asset) -replace(\" \", \"_\"))##$($i.Asset)##$($i.Source)####auto.unitrends.Server=$($i.Server)&auto.unitrends.Appliance=$($i.Appliance)&auto.unitrends.JobName=$($i.JobName)&auto.unitrends.JobType=$($i.JobType)&auto.unitrends.JobApp=$($i.JobApp)&auto.unitrends.JobFrequency=$($i.JobFrequency)&auto.unitrends.BackupStart=$($i.BackupStart)&auto.unitrends.BackupType=$($i.BackupType)&auto.unitrends.BackupID=$($i.BackupID)&auto.unitrends.BackupStatus=$($i.BackupStatus)\"\n}"}}]]></adlist>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.unitrends.BackupStatus","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n$UniServer = \"##hostname##\"\n$UniUser = \"##uni.user##\"\n$UniPass = \"##uni.pass##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/unitrends-functions.ps1') | Invoke-Expression\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\ntry {\n    # Connect to Unitrends server and retrieve auth token\n    $AuthToken = (Get-UniSession -Server $UniServer -User $UniUser -Pass $UniPass).auth_token\n    # Collect Job data\n    $JobHistory = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/jobs/history/backup\").data\n    $JobConfigs = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/joborders\").data\n    $ApplianceiTime = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/date-time\")\n    # Add server ip and frequency datapoint to Job objects\n    foreach ($i in $JobHistory) {\n        $Frequency = $JobConfigs | Where-Object {$_.name -eq $i.name} | Select-Object calendar_str\n        $Frequency = $Frequency.calendar_str | Where-Object {$_ -Notlike \"*/*/*\"}\n        if (@($Frequency).Count -gt 1){\n            $Frequency = $Frequency -Join \"; \"\n        }\n        $i | Add-Member -NotePropertyName \"frequency\" -NotePropertyValue $Frequency\n        $i | Add-Member -NotePropertyName \"system_ip\" -NotePropertyValue $UniServer\n    }\n    # Collect Asset-Source data\n    $Sources = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method \"GET\" -Endpoint \"/assets\").data\n    # Build Asset Custom Objects\n    $Assets = @()\n    foreach ($x in $Sources) {\n        foreach ($y in $x.children){\n            $obj = [PSCustomObject]@{\n                Asset = $y.name\n                Source = $x.name\n            }\n            $Assets += $obj\n        }\n    }    \n} catch {\n    Write-Output \"Could not connect to $UniServer. Check Credentials or API access.\"\n}\n\n# Builds Objects for Unnasigned Assets\n$arr = @()\nforeach ($x in $JobHistory){\n    foreach ($y in $x.backups){\n        $obj = [PSCustomObject]@{\n            Asset = $y.asset_name\n            Source = $y.client_name\n            Server = $x.system_ip\n            Appliance = $x.system_name\n            JobName = $x.name\n            JobType = $x.type\n            JobApp = $x.app_name\n            JobFrequency = $x.frequency\n            BackupStatus = $y.status\n            BackupStart = [DateTime]$y.start_time\n            BackupType = $y.mode\n            BackupSize = $y.size\n            BackupID = $y.backup_id\n        }\n        $arr += $obj\n    }  \n}\n$AssignedUniAssets = $arr | Where-Object {($_.BackupStatus -ne \"Active\") -and ($_.BackupStatus -ne \"Queued\")} | Group-Object Asset | Foreach-Object {$_.Group | Sort-Object BackupStart | Select-Object -Last 1}\n$ActiveUniAssets = $arr | Where-Object {($_.BackupStatus -eq \"Active\") -or ($_.BackupStatus -eq \"Queued\")}\n\n# Builds Objects for Unnasigned Assets\n$arr = @()\nforeach ($i in $Assets) {    \n    if ($i.Asset -notin $AssignedUniAssets.Asset) {\n        $obj = [PSCustomObject]@{\n            Asset = $i.Asset\n            Source = $i.Source\n        }\n        $arr += $obj\n    }\n}\n$UnassignedUniAssets = $arr\n\n# Normalize Server Time\n$ApplianceiTime = \"$($ApplianceiTime.month)/$($ApplianceiTime.day)/$($ApplianceiTime.year) $($ApplianceiTime.hour):$($ApplianceiTime.minute):$($ApplianceiTime.second)\"\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $ActiveUniAssets){\n    Write-Output \"$(($i.Asset) -replace(\" \", \"_\"))##$($i.Asset)##$($i.Source)####auto.unitrends.Server=$($i.Server)&auto.unitrends.Appliance=$($i.Appliance)&auto.unitrends.JobName=$($i.JobName)&auto.unitrends.JobType=$($i.JobType)&auto.unitrends.JobApp=$($i.JobApp)&auto.unitrends.JobFrequency=$($i.JobFrequency)&auto.unitrends.BackupStart=$($i.BackupStart)&auto.unitrends.BackupType=$($i.BackupType)&auto.unitrends.BackupID=$($i.BackupID)&auto.unitrends.BackupStatus=$($i.BackupStatus)\"\n}"}}]]></adlist>
         <schemaVersion>2</schemaVersion>
         <dataSourceType>1</dataSourceType>
         <attributes>
@@ -139,8 +141,7 @@ foreach ($i in $ActiveUniAssets){
         <attribute>
             <name>scriptgroovy</name>
             <value>&#60;#
-.SYNOPSIS
-    This script will reach out to each Unitrends appliance configured in ADI and collect data to build a report. 
+ configured in ADI and collect data to build a report. 
 .NOTES
     Author:     Andy Escolastico
 #&#62;
@@ -167,6 +168,7 @@ try {
     # Collect Job data
     $JobHistory = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/jobs/history/backup&#34;).data
     $JobConfigs = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/joborders&#34;).data
+    $ApplianceiTime = (Invoke-UniRest -Server $UniServer -AuthToken $AuthToken -Method &#34;GET&#34; -Endpoint &#34;/date-time&#34;)
     # Add server ip and frequency datapoint to Job objects
     foreach ($i in $JobHistory) {
         $Frequency = $JobConfigs | Where-Object {$_.name -eq $i.name} | Select-Object calendar_str
@@ -232,11 +234,14 @@ foreach ($i in $Assets) {
 }
 $UnassignedUniAssets = $arr
 
+# Normalize Server Time
+$ApplianceiTime = &#34;$($ApplianceiTime.month)/$($ApplianceiTime.day)/$($ApplianceiTime.year) $($ApplianceiTime.hour):$($ApplianceiTime.minute):$($ApplianceiTime.second)&#34;
+
 #-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
 
 # Batch Collection Output
 foreach ($i in $ActiveUniAssets){
-    Write-Host &#34;$(($i.Asset) -replace(&#34; &#34;, &#34;_&#34;)).HoursSinceStart=$((New-TimeSpan -Start &#34;$($i.BackupStart)&#34; -End $(Get-Date)).TotalHours)&#34;
+    Write-Host &#34;$(($i.Asset) -replace(&#34; &#34;, &#34;_&#34;)).HoursSinceStart=$((New-TimeSpan -Start &#34;$($i.BackupStart)&#34; -End $ApplianceiTime).TotalHours)&#34;
 }</value>
             <comment></comment>
         </attribute>

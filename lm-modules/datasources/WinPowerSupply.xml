@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1600469707</version>
+        <name>WinPowerSupply</name>
+        <displayedas>Power Supply</displayedas>
+        <description></description>
+        <collector>wmi</collector>
+        <hasMultiInstances>false</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isWindows()</appliesTo>
+        <wildcardauto>false</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript></wildcardlinuxscript>
+        <wildcardlinuxcmdline></wildcardlinuxcmdline>
+        <wildcardwinscript></wildcardwinscript>
+        <wildcardwincmdline></wildcardwincmdline>
+        <wildcardgroovyscript></wildcardgroovyscript>
+        <wildcardschedule>1440</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>Windows</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"none","agdparams":"","id":0,"filters":[],"params":{}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>ip</name>
+            <value>dns</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>wmiNamespace</name>
+            <value>CIMV2</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>type</name>
+            <value>query</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>queryClass</name>
+            <value>Win32_ComputerSystem</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>queryIndex</name>
+            <value>@</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>queryValue</name>
+            <value>@</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>methodName</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>targetPath</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>methodInputs</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>state</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>none</postprocessormethod>
+            <postprocessorparam></postprocessorparam>
+            <usevalue></usevalue>
+            <alertexpr>&#62;= 4 5</alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>1 = Other
+2 = Unknown
+3 = Safe
+4 = Warning
+5 = Critical
+6 = Non-recoverable</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1>PowerSupplyState</userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

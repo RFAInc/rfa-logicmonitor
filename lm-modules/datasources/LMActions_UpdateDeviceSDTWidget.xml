@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1605506594</version>
+        <name>LMActions_UpdateDeviceSDTWidget</name>
+        <displayedas>Update Device SDT Widget</displayedas>
+        <description>**Created by Logicmonitor Professional Services**</description>
+        <collector>script</collector>
+        <hasMultiInstances>false</hasMultiInstances>
+        <schedule>60</schedule>
+        <appliesTo>system.displayname == &#34;RFA-LM-Portal&#34;</appliesTo>
+        <wildcardauto>false</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript></wildcardlinuxscript>
+        <wildcardlinuxcmdline></wildcardlinuxcmdline>
+        <wildcardwinscript></wildcardwinscript>
+        <wildcardwincmdline></wildcardwincmdline>
+        <wildcardgroovyscript></wildcardgroovyscript>
+        <wildcardschedule>1440</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>LM Actions</group>
+        <tags></tags>
+        <technology>needs below to work:
+api token 
+company name 
+widget id
+dashboard id</technology>
+        <adlist><![CDATA[{"agdmethod":"none","agdparams":"","id":0,"filters":[],"params":{}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>import com.santaba.agent.groovyapi.http.*;
+import groovy.json.*;
+import org.apache.http.util.EntityUtils
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Hex;
+import java.text.SimpleDateFormat
+import java.nio.file.Paths
+import java.nio.file.Files
+ 
+accessId = hostProps.get(&#34;api.user&#34;);
+accessKey = hostProps.get(&#34;api.pass&#34;);
+company = &#34;rfa&#34;;
+def widgetId = &#34;4781&#34;;
+def dashId = &#34;725&#34;;
+
+sdts = iterate(&#39;/sdt/sdts&#39;)
+def content = []
+sdts?.each { sdt -&#62;
+    if (sdt.type == &#34;ResourceSDT&#34; || sdt.type == &#34;ResourceGroupSDT&#34;) {
+        def comment = sdt.comment ? &#34; Comment=${sdt.comment}&#34; : &#34;&#34;
+        def deviceGroup = sdt.deviceGroupFullPath ? &#34; DeviceGroup=${sdt.deviceGroupFullPath}&#34; : &#34;&#34;
+        def device = sdt.deviceDisplayName ? &#34; Device=${sdt.deviceDisplayName}&#34; : &#34;&#34;
+        def occurrence = sdt.sdtType ? &#34;Occurrence=${sdt.sdtType}&#34; : &#34;&#34;
+        def user = sdt.admin ? &#34;User=${sdt.admin}&#34; : &#34;&#34;
+        def startDate = sdt.startDateTimeOnLocal ? &#34;StartDate=${sdt.startDateTimeOnLocal}&#34; : &#34;&#34;
+        def endDate = sdt.endDateTimeOnLocal ? &#34;End Date=${sdt.endDateTimeOnLocal}&#34; : &#34;&#34;
+        def text = &#34;${device} || ${startDate} || ${endDate} || ${occurrence} || ${user} || ${comment}&#34;
+        content.add(text)
+    }   
+}
+
+
+def body = [
+    type:&#34;text&#34;,
+    dashboardId:dashId,
+    name:&#34;Devices with Active SDT(s)&#34;,
+    content: (content ? (content.join(&#34;\r\n=======================================================================================================================================================================\r\n&#34;)) : &#34;No SDTs&#34;)
+]
+def itWorked = invokeLMAPI(&#34;/dashboard/widgets/${widgetId}&#34;, &#34;PUT&#34;, &#34;&#34;, body)
+
+
+def size = (sdts.size() ? sdts.size() : 0).toString()
+println &#34;numberOfSDTs=${size}&#34;
+
+return 0;
+
+
+def iterate(String path) {
+    def response = []
+    def remaining = true
+    def offset = 0
+    def size = 50
+    while (remaining == true) {
+        def result = (invokeLMAPI(path,&#39;GET&#39;,&#34;?size=${size}&#38;offset=${offset}&#34;))?.items
+        result.each { item -&#62;
+            response.add(item)
+        }
+        if (result.size() &#60; size) {
+            remaining = false
+        }
+        else {
+            offset += size
+        }
+    }
+    return response
+}
+def invokeLMAPI(String path, String httpverb = &#39;GET&#39;, String queryParams = &#39;&#39;, body = &#39;&#39;) {
+    
+    // check if body is not a string, if it&#39;s not convert it
+    if (body &#38;&#38; !(body instanceof String)) {
+        body = JsonOutput.toJson(body)
+    }
+ 
+    //Get hostname, port, url, and ensure httpverb is capitalized. 
+    useSSL = true
+    port = 443
+    hostname = &#34;${company}.logicmonitor.com&#34;
+    url = &#34;https://${hostname}/santaba/rest${path}${queryParams}&#34;
+    httpverb = httpverb.toUpperCase()
+ 
+    epoch = System.currentTimeMillis();
+    requestVars = httpverb + epoch + body + path
+ 
+    // construct signature
+    hmac = Mac.getInstance(&#34;HmacSHA256&#34;);
+    secret = new SecretKeySpec(accessKey.getBytes(), &#34;HmacSHA256&#34;);
+    hmac.init(secret);
+    hmac_signed = Hex.encodeHexString(hmac.doFinal(requestVars.getBytes()));
+    signature = hmac_signed.bytes.encodeBase64();
+ 
+    //Construct those headerse baby
+    headers = [
+        &#39;Authorization&#39;: &#34;LMv1 ${accessId}:${signature}:${epoch}&#34;,
+        &#39;Content-Type&#39;: &#34;application/json&#34;,
+        &#39;X-Version&#39;: 3
+    ]
+ 
+    //open httpClient
+    httpClient = HTTP.open(hostname, port, useSSL)
+ 
+ 
+    //Alrighty, we&#39;re going to make the request and loop if we get a 429 error, otherwise return the response/stats code. 
+    stopLoop = false
+    sleepTime = 10
+    while (stopLoop == false) {
+ 
+    //switch to decide what http call to make. 
+    switch (httpverb) {
+        case &#39;GET&#39;:
+            httpGet = httpClient.get(url, headers)
+            break
+        case &#39;POST&#39;:
+            httpPost = httpClient.post(url, body, headers)
+            break
+        case &#39;PUT&#39;:
+            httpPut = httpClient.put(url, body, headers)
+            break
+        case &#39;PATCH&#39;:
+            httpPatch = httpClient.patch(url, body, headers)
+            break
+        default:
+            println &#39;Specify a correct httpverb please. e.g. GET, POST, PUT, PATCH&#39;
+            return null
+            break
+ 
+    }
+ 
+    //Here is the status code
+    statusCode = httpClient.getStatusCode()
+ 
+    //switch to decide what to do with the status Code, possibly rate limit. 
+    switch (statusCode) {
+        case 200:
+            response = new JsonSlurper().parseText(httpClient.getResponseBody())
+            stopLoop = true
+            break
+        case 429:
+            println &#34;Request exceeded rate limit, retrying in ${sleepTime} seconds...&#34;
+            sleep(sleepTime * 1000)
+            sleepTime = (sleepTime + 10)
+            break
+        default:
+            stopLoop = true
+            response = null
+            println &#34;Status code: ${statusCode}&#34;
+            println &#34;See https://www.logicmonitor.com/support/rest-api-developers-guide/v2/ for more information.&#34;
+        break
+    }
+ 
+ 
+    }
+    return response
+}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>numberOfSDTs</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>numberOfSDTs</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>2</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

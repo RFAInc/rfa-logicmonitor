@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1593209626</version>
+        <name>SNMP_LM_Troubleshooter</name>
+        <displayedas>SNMP Troubleshooter</displayedas>
+        <description></description>
+        <collector>script</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>60</schedule>
+        <appliesTo>//AppliesToFunction uses the following: join(system.categories,&#34;,&#34;) =~ &#34;SNMP&#34; &#38;&#38; !isWindows() &#38;&#38; !isVMWare()
+isSNMP()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;embeded&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;embeded&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>// import the logicmonitor snmp helper class
+import com.santaba.agent.groovyapi.snmp.Snmp;
+
+// get the snmp host from the device properties
+def host = hostProps.get(&#39;system.hostname&#39;);
+
+// retrieve the value for the specified OID
+try 
+{
+    oid_value = Snmp.get(host, &#34;.1.3.6.1.2.1.1.1.0&#34;);
+}
+catch (Exception ex)
+{
+    println &#34;InvalidCredentials##SNMP GET failed using generic OID .1.3.6.1.2.1.1.1.0.##Please verify credentials and or network access.&#34;;
+}
+
+return (0);</wildcardgroovyscript>
+        <wildcardschedule>15</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group></group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"embeded","groovyscript":"// import the logicmonitor snmp helper class\nimport com.santaba.agent.groovyapi.snmp.Snmp;\n\n// get the snmp host from the device properties\ndef host = hostProps.get('system.hostname');\n\n// retrieve the value for the specified OID\ntry \n{\n    oid_value = Snmp.get(host, \".1.3.6.1.2.1.1.1.0\");\n}\ncatch (Exception ex)\n{\n    println \"InvalidCredentials##SNMP GET failed using generic OID .1.3.6.1.2.1.1.1.0.##Please verify credentials and or network access.\";\n}\n\nreturn (0);"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>import com.santaba.agent.groovyapi.expect.Expect;
+import com.santaba.agent.groovyapi.snmp.Snmp;
+import com.santaba.agent.groovyapi.http.*;
+import com.santaba.agent.groovyapi.jmx.*;
+import org.xbill.DNS.*;
+
+println &#34;Alert = 1&#34;</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>Alert</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>Alert</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr>= 1 1</alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>value is 1 when alert is present</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>20</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

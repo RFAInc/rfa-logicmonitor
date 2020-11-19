@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1597153760</version>
+        <name>MsftADMembers</name>
+        <displayedas>Domain Members</displayedas>
+        <description></description>
+        <collector>script</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isDomainController()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>try {
+    Import-Module ActiveDirectory
+} catch {
+    Invoke-Expression (new-Object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/ADModule/master/Import-ActiveDirectory.ps1&#39;); Import-ActiveDirectory
+}
+$servers = Get-ADComputer -Filter &#34;OperatingSystem -like &#39;*Server*&#39;&#34; -Property * | Select-Object Name, OperatingSystem, IPv4Address, LastLogonDate 
+foreach($i in $servers){ Write-Host &#34;$($i.Name)##$($i.Name)##$($i.IPv4Address) / $($i.OperatingSystem)&#34;}
+exit 0</wildcardgroovyscript>
+        <wildcardschedule>15</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>ilp</agdmethod>
+        <agdparams>OperatingSystem</agdparams>
+        <group>Microsoft Active Directory</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"OperatingSystem","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"try {\n    Import-Module ActiveDirectory\n} catch {\n    Invoke-Expression (new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/ADModule/master/Import-ActiveDirectory.ps1'); Import-ActiveDirectory\n}\n$servers = Get-ADComputer -Filter \"OperatingSystem -like '*Server*'\" -Property * | Select-Object Name, OperatingSystem, IPv4Address, LastLogonDate \nforeach($i in $servers){ Write-Host \"$($i.Name)##$($i.Name)##$($i.IPv4Address) / $($i.OperatingSystem)\"}\nexit 0"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>powerShell</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>try {
+    Import-Module ActiveDirectory
+} catch {
+    Invoke-Expression (new-Object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/ADModule/master/Import-ActiveDirectory.ps1&#39;); Import-ActiveDirectory
+}
+$instance = Get-ADComputer -Filter &#39;Name -eq &#34;##wildvalue##&#34;&#39; -Property * | Select-Object Name, OperatingSystem, IPv4Address, LastLogonDate 
+Write-Host &#34;lastlogondate=$($instance.LastLogonDate)&#34;
+exit 0</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>last_logon_date</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>LastLogonDate</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

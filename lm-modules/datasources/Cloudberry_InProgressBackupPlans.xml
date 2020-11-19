@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1605562654</version>
+        <name>Cloudberry_InProgressBackupPlans</name>
+        <displayedas>In Progress Backup Plans</displayedas>
+        <description></description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isCloudberry()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$user = &#34;##cloudberry.user##&#34;
+$pass = &#34;##cloudberry.pass##&#34;
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+# Load modules from github
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/cloudberry-functions.ps1&#39;) | Invoke-Expression
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+# Polls Cloudberry for In Progress Backup Plans (status code 1 or 3)
+$InProgressBU = Get-CloudberryMonitoringObject -User $user -Pass $pass | Where-Object {($_.PlanType -in $BackupTypes.Code) -and (($_.Status -eq 3) -or ($_.Status -eq 1))}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Discovery Output
+foreach ($i in $InProgressBU) {
+    $BackupType = ($BackupTypes | Where-Object {$_.Code -eq $i.PlanType}).Name
+    $ReportLink = ($i.DetailedReportLink -replace(&#39;=&#39;, &#39;%3D&#39;))
+    Write-Host &#34;$($i.PlanId)##$($i.PlanName)##$($i.CompanyName)####auto.cloudberry.PlanName=$($i.PlanName)&#38;auto.cloudberry.CompanyName=$($i.CompanyName)&#38;auto.cloudberry.UserName=$($i.UserName)&#38;auto.cloudberry.UserID=$($i.UserID)&#38;auto.cloudberry.ComputerName=$($i.ComputerName)&#38;auto.cloudberry.BuildVersion=$($i.BuildVersion)&#38;auto.cloudberry.StorageType=$($i.StorageType)&#38;auto.cloudberry.PlanId=$($i.PlanId)&#38;auto.cloudberry.PlanType=$($BackupType)&#38;auto.cloudberry.Status=$($i.StatusName)&#38;auto.cloudberry.DetailedReportLink=$($ReportLink)&#34;
+}</wildcardgroovyscript>
+        <wildcardschedule>15</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>ilp</agdmethod>
+        <agdparams>auto.cloudberry.ComputerName</agdparams>
+        <group>Cloudberry</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.cloudberry.ComputerName","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n# Loads credentials from device properties\n$user = \"##cloudberry.user##\"\n$pass = \"##cloudberry.pass##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n# Load modules from github\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/cloudberry-functions.ps1') | Invoke-Expression\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\n# Polls Cloudberry for In Progress Backup Plans (status code 1 or 3)\n$InProgressBU = Get-CloudberryMonitoringObject -User $user -Pass $pass | Where-Object {($_.PlanType -in $BackupTypes.Code) -and (($_.Status -eq 3) -or ($_.Status -eq 1))}\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $InProgressBU) {\n    $BackupType = ($BackupTypes | Where-Object {$_.Code -eq $i.PlanType}).Name\n    $ReportLink = ($i.DetailedReportLink -replace('=', '%3D'))\n    Write-Host \"$($i.PlanId)##$($i.PlanName)##$($i.CompanyName)####auto.cloudberry.PlanName=$($i.PlanName)&auto.cloudberry.CompanyName=$($i.CompanyName)&auto.cloudberry.UserName=$($i.UserName)&auto.cloudberry.UserID=$($i.UserID)&auto.cloudberry.ComputerName=$($i.ComputerName)&auto.cloudberry.BuildVersion=$($i.BuildVersion)&auto.cloudberry.StorageType=$($i.StorageType)&auto.cloudberry.PlanId=$($i.PlanId)&auto.cloudberry.PlanType=$($BackupType)&auto.cloudberry.Status=$($i.StatusName)&auto.cloudberry.DetailedReportLink=$($ReportLink)\"\n}"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>powerShell</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$user = &#34;##cloudberry.user##&#34;
+$pass = &#34;##cloudberry.pass##&#34;
+
+#-----------------------------------------------------------[Functions]------------------------------------------------------------#
+
+# Load modules from github
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/cloudberry-functions.ps1&#39;) | Invoke-Expression
+(new-object Net.WebClient).DownloadString(&#39;https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1&#39;) | Invoke-Expression
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+# Ignores invalid certificate errors
+Skip-InvalidCertErrors
+
+# Polls Cloudberry for In Progress Backup Plans (status code 1 or 3)
+$InProgressBU = Get-CloudberryMonitoringObject -User $user -Pass $pass | Where-Object {($_.PlanType -in $BackupTypes.Code) -and (($_.Status -eq 3) -or ($_.Status -eq 1))}
+
+# CloudBerry returns dates in GMT   
+$CurrentGMTDate = (Invoke-RestMethod -Uri &#34;http://worldclockapi.com/api/json/gmt/now&#34; -Method &#34;Get&#34;).currentDateTime
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Collection Output
+foreach ($i in $InProgressBU) {
+    $HoursSinceStart = (New-TimeSpan -Start &#34;$($i.LastStart)&#34; -End ($CurrentGMTDate)).TotalHours
+    Write-Host &#34;$($i.PlanId).Status=$($i.Status)&#34;
+    Write-Host &#34;$($i.PlanId).HoursSinceStart=$($HoursSinceStart)&#34;
+}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>Status</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.Status</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>Overdue = 1
+InProgress = 3</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>HoursSinceStart</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.HoursSinceStart</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

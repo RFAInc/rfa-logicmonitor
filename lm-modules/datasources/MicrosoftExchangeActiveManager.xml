@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1604522073</version>
+        <name>MicrosoftExchangeActiveManager</name>
+        <displayedas>Exchange Active Manager</displayedas>
+        <description>Monitors the Exchange mailbox database metrics such as database mounted status. 
+0 = Database dismounted on inactive copy (normal)
+1 = Database is active but dismounted, or mounted but inactive (failure)
+2 = Database is active and mounted (normal)</description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>hasCategory(&#34;MicrosoftExchange2016&#34;) ||
+hasCategory(&#34;MicrosoftExchange2019&#34;) ||
+hasCategory(&#34;MicrosoftExchange2007&#34;) || hasCategory(&#34;MicrosoftExchange2010&#34;) ||  hasCategory(&#34;MicrosoftExchange2013&#34;)</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;embeded&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;embeded&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>/*******************************************************************************
+ *  © 2007-2019 - LogicMonitor, Inc. All rights reserved.
+ ******************************************************************************/
+
+import com.santaba.agent.groovyapi.win32.WMI
+
+def host = hostProps.get(&#34;system.hostname&#34;)
+
+def is_AD = true
+
+if (is_AD == true) {
+    // get a list of running services
+    def output = WMI.queryAll(host, &#34;select NAME from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager&#34;)
+
+    output.each
+            { attr -&#62;
+
+                def wildvalue = attr.&#39;NAME&#39;.replaceAll(&#34;[^A-Za-z0-9_\\-\\. ]&#34;, &#34;&#34;).replaceAll(&#34; &#34;, &#34;&#34;)
+                def name = attr.&#39;NAME&#39;
+
+                println &#34;${wildvalue}##${name}&#34;
+            }
+} else if (is_AD == false) {
+    // get a list of running services
+    def output = WMI.queryAll(host, &#34;select * from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager&#34;)
+
+    output.each
+            { instance -&#62;
+
+                // sanitize wildvalue of special characters
+                def wildvalue = instance.&#39;NAME&#39;.replaceAll(&#34;[^A-Za-z0-9_\\-\\. ]&#34;, &#34;&#34;).replaceAll(&#34; &#34;, &#34;&#34;)
+
+                // iterate through all
+                instance.each
+                        { key, val -&#62;
+
+                            // print out
+                            println &#34;${wildvalue}.${key}=${val}&#34;
+                        }
+            }
+}
+
+return 0</wildcardgroovyscript>
+        <wildcardschedule>1440</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>Microsoft Exchange</group>
+        <tags>application,exchange,microsoft,windows</tags>
+        <technology>- requires PropertySource &#39;addCategory_MicrosoftExchange&#39; to have properly executed and applied necessary system categories.</technology>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[{"attribute":"##WILDVALUE##","operation":"NotEqual","value":"_total"}],"params":{"type":"embeded","groovyscript":"/*******************************************************************************\n *  © 2007-2019 - LogicMonitor, Inc. All rights reserved.\n ******************************************************************************/\n\nimport com.santaba.agent.groovyapi.win32.WMI\n\ndef host = hostProps.get(\"system.hostname\")\n\ndef is_AD = true\n\nif (is_AD == true) {\n    // get a list of running services\n    def output = WMI.queryAll(host, \"select NAME from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager\")\n\n    output.each\n            { attr ->\n\n                def wildvalue = attr.'NAME'.replaceAll(\"[^A-Za-z0-9_\\\\-\\\\. ]\", \"\").replaceAll(\" \", \"\")\n                def name = attr.'NAME'\n\n                println \"${wildvalue}##${name}\"\n            }\n} else if (is_AD == false) {\n    // get a list of running services\n    def output = WMI.queryAll(host, \"select * from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager\")\n\n    output.each\n            { instance ->\n\n                // sanitize wildvalue of special characters\n                def wildvalue = instance.'NAME'.replaceAll(\"[^A-Za-z0-9_\\\\-\\\\. ]\", \"\").replaceAll(\" \", \"\")\n\n                // iterate through all\n                instance.each\n                        { key, val ->\n\n                            // print out\n                            println \"${wildvalue}.${key}=${val}\"\n                        }\n            }\n}\n\nreturn 0"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>/*******************************************************************************
+ *  © 2007-2019 - LogicMonitor, Inc. All rights reserved.
+ ******************************************************************************/
+
+import com.santaba.agent.groovyapi.win32.WMI
+
+def host = hostProps.get(&#34;system.hostname&#34;)
+
+def is_AD = false
+
+if (is_AD == true) {
+    // get a list of running services
+    def output = WMI.queryAll(host, &#34;select NAME from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager&#34;)
+
+    output.each
+            { attr -&#62;
+
+                def wildvalue = attr.&#39;NAME&#39;.replaceAll(&#34;[^A-Za-z0-9_\\-\\. ]&#34;, &#34;&#34;).replaceAll(&#34; &#34;, &#34;&#34;)
+                def name = attr.&#39;NAME&#39;
+
+                println &#34;${wildvalue}##${name}&#34;
+            }
+} else if (is_AD == false) {
+    // get a list of running services
+    def output = WMI.queryAll(host, &#34;select * from Win32_PerfFormattedData_MSExchangeActiveManager_MSExchangeActiveManager&#34;)
+
+    output.each
+            { instance -&#62;
+
+                // sanitize wildvalue of special characters
+                def wildvalue = instance.&#39;NAME&#39;.replaceAll(&#34;[^A-Za-z0-9_\\-\\. ]&#34;, &#34;&#34;).replaceAll(&#34; &#34;, &#34;&#34;)
+
+                // iterate through all
+                instance.each
+                        { key, val -&#62;
+
+                            // print out
+                            println &#34;${wildvalue}.${key}=${val}&#34;
+                        }
+            }
+}
+
+return 0</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>__filter_0</name>
+            <value>##WILDVALUE##	NotEqual	_total</value>
+            <comment>ignore _total instance</comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>DATABASECOPYROLEACTIVE</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.DATABASECOPYROLEACTIVE</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>Database mounted state.
+
+1= database copy role active</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>DATABASEMOUNTED</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.DATABASEMOUNTED</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>Database mounted state.
+
+0=dismounted,
+1=mounted</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>DatabaseActiveCopyDismounted</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>expression</postprocessormethod>
+            <postprocessorparam>DATABASEMOUNTED + DATABASECOPYROLEACTIVE</postprocessorparam>
+            <usevalue></usevalue>
+            <alertexpr>= 1 1 1</alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody>The status of the Exchange ##INSTANCE## is reporting a value of ##VALUE## putting the host into ##STATE##. This started at ##START## or ##DURATION## ago.
+
+Monitors the Exchange mailbox database metrics such as database mounted status and active copy status for databases in an availability group (DAG). 
+
+0 = Database dismounted on inactive copy (normal)
+1 = Database is active but dismounted, or mounted but inactive (failure)
+2 = Database is active and mounted (normal)</alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>If the DAG copy is active and dismounted, raise an alert. If the copy is inactive, do not raise an alert if the Database is dismounted.</description>
+            <maxvalue>2</maxvalue>
+            <minvalue>0</minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>1</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        <graph>
+            <name>Database Copy Role Active</name>
+            <title>Database Copy Role Active</title>
+            <verticallabel>1 = Database Copy Role Active</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>3.0</maxvalue>
+            <minvalue>-1.0</minvalue>
+            <displayprio>2</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <graphdatapoints>
+        <graphdatapoint>
+            <name>DATABASECOPYROLEACTIVE</name>
+            <datapointname>DATABASECOPYROLEACTIVE</datapointname>
+            <cf>1</cf>
+        </graphdatapoint>
+            </graphdatapoints>
+            <graphvirtualdatapoints>
+            </graphvirtualdatapoints>
+            <graphdatas>
+            <graphdata>
+                <type>1</type>
+                <legend>State</legend>
+                <color>maroon</color>
+                <datapointname>DATABASECOPYROLEACTIVE</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+            </graphdata>
+            </graphdatas>
+        </graph>
+        <graph>
+            <name>Database Mounted State</name>
+            <title>Database Mounted State</title>
+            <verticallabel>0=dismounted, 1=mounted</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>3.0</maxvalue>
+            <minvalue>-1.0</minvalue>
+            <displayprio>1</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <graphdatapoints>
+        <graphdatapoint>
+            <name>DATABASEMOUNTED</name>
+            <datapointname>DATABASEMOUNTED</datapointname>
+            <cf>1</cf>
+        </graphdatapoint>
+            </graphdatapoints>
+            <graphvirtualdatapoints>
+            </graphvirtualdatapoints>
+            <graphdatas>
+            <graphdata>
+                <type>1</type>
+                <legend>State</legend>
+                <color>maroon</color>
+                <datapointname>DATABASEMOUNTED</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+            </graphdata>
+            </graphdatas>
+        </graph>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>
