@@ -33,7 +33,6 @@ function New-RFALogicMonitorSDT {
         deviceSerialNumber = $deviceSerialNumber
         deviceLocalIPAddress = $deviceIPAddress
     } | ConvertTo-Json
-    #$Result = Invoke-WebRequest -Uri $jobRunnerUri -Method "POST" -Body $body -ContentType 'application/json'
-    #Write-Output $Result
-    Write-Output $body
+    $Result = Invoke-WebRequest -Uri $jobRunnerUri -Method "POST" -Body $body -ContentType 'application/json'
+    Write-Output $Result
 }
