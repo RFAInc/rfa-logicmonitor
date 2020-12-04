@@ -60,19 +60,20 @@ function Invoke-LomoApi() {
                     Start-Sleep -Seconds 60
                     $response = Invoke-RestMethod @request
                 }
-                { $_.Exception.Response.StatusCode.value__ } {
-                    Write-Host "Request failed, not as a result of rate limiting"
-                    # Dig into the exception to get the Response details.
-                    # Note that value__ is not a typo.
-                    Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__
-                    Write-Host "StatusDescription:" $_.Exception.Response.StatusCode
-                    $response = $null
-                    $Stoploop = $true
-                }
+                # { $_.Exception.Response.StatusCode.value__ } {
+                #     Write-Host "Request failed, not as a result of rate limiting"
+                #     # Dig into the exception to get the Response details.
+                #     # Note that value__ is not a typo.
+                #     Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__
+                #     Write-Host "StatusDescription:" $_.Exception.Response.StatusCode
+                #     $response = $null
+                #     $Stoploop = $true
+                # }
                 default {
-                    Write-Host "An Unknown Exception occured:"
-                    Write-Host $_.Exception
-                    $response = $null                    
+                    # Write-Host "An Unknown Exception occured:"
+                    # Write-Host $_.Exception
+                    # $response = $null        
+                    Write-Host $_            
                     $Stoploop = $true
                 }
             }
