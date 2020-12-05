@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isWindows()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "function Get-UserSessions {\n    $UserSessions = $(& \"$env:windir\\system32\\QWinSta.exe\") | ForEach-Object {$_.substring(19)} | ConvertFrom-String -PropertyNames User, ID, State | Where-Object {$_.User -ne \"\"} | Where-Object {$_.User -ne \"USERNAME\"} | Select-Object User, State    \n    Write-Output $UserSessions\n}\n$result = Get-UserSessions\nWrite-Host \"windows.users.loggedin=$($result.User -join \", \")\""
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "powerShell"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1597279219,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "Windows_Users_LoggedIn",
+    "id": 168,
+    "group": "RFA Custom"
+}

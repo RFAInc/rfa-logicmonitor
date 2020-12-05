@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isdevice() && system.displayname",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import org.apache.http.HttpEntity\nimport org.apache.http.client.methods.CloseableHttpResponse\nimport org.apache.http.client.methods.HttpGet\nimport org.apache.http.impl.client.CloseableHttpClient\nimport org.apache.http.impl.client.HttpClients\nimport org.apache.http.util.EntityUtils\nimport javax.crypto.Mac;\nimport javax.crypto.spec.SecretKeySpec;\nimport org.apache.commons.codec.binary.Hex;import com.santaba.agent.groovyapi.http.*;\nimport groovy.json.JsonSlurper;\n\t\ndef hostName = java.net.URLEncoder.encode(hostProps.get(\"system.displayname\"));\n\n//Account Info\ndef accessId = hostProps.get(\"api.user\");\ndef accessKey = hostProps.get(\"api.pass\");\ndef account = hostProps.get(\"api.account\");\ndata = ''\ndef queryParams = '?fields=inheritedProperties&filter=displayName:'+hostName;\ndef resourcePath = \"/device/devices\"\ndef url = \"https://\" + account + \".logicmonitor.com\" + \"/santaba/rest\" + resourcePath + queryParams;\n\n//get current time\nepoch = System.currentTimeMillis();\n\n//calculate signature\nrequestVars = \"GET\" + epoch + resourcePath;\n\nhmac = Mac.getInstance(\"HmacSHA256\");\nsecret = new SecretKeySpec(accessKey.getBytes(), \"HmacSHA256\");\nhmac.init(secret);\nhmac_signed = Hex.encodeHexString(hmac.doFinal(requestVars.getBytes()));\nsignature = hmac_signed.bytes.encodeBase64();\n\n// HTTP Get\nCloseableHttpClient httpclient = HttpClients.createDefault();\nhttpGet = new HttpGet(url);\nhttpGet.addHeader(\"Authorization\" , \"LMv1 \" + accessId + \":\" + signature + \":\" + epoch);\nresponse = httpclient.execute(httpGet);\nresponseBody = EntityUtils.toString(response.getEntity());\ncode = response.getStatusLine().getStatusCode();\n\n// user groovy slurper\njson_slurper = new JsonSlurper();\nresponse_obj = json_slurper.parseText(responseBody);\n\n//print output\nprintln \"InheretedProperties=\" +response_obj.data.items.inheritedProperties;\nhttpclient.close();\n\nreturn (0);"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1591201714,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "LogicMonitor_Host_InheretedProperties",
+    "id": 167,
+    "group": "RFA Custom"
+}

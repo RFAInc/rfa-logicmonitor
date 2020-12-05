@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "join(system.groups,\",\") =~ \"Devices by Organization\"",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import com.santaba.agent.groovyapi.expect.Expect;\nimport com.santaba.agent.groovyapi.snmp.Snmp;\nimport com.santaba.agent.groovyapi.http.*;\nimport com.santaba.agent.groovyapi.jmx.*;\nimport org.xbill.DNS.*;\n\nprintln('rfa.client.grouping=true')"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1598973753,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "LogicMonitor_Company_Grouping",
+    "id": 135,
+    "group": "RFA Custom"
+}

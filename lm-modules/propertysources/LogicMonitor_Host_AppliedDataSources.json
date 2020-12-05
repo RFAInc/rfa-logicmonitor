@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "true()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import org.apache.http.HttpEntity\nimport org.apache.http.client.methods.CloseableHttpResponse\nimport org.apache.http.client.methods.HttpGet\nimport org.apache.http.impl.client.CloseableHttpClient\nimport org.apache.http.impl.client.HttpClients\nimport org.apache.http.util.EntityUtils\nimport javax.crypto.Mac;\nimport javax.crypto.spec.SecretKeySpec;\nimport org.apache.commons.codec.binary.Hex;\nimport groovy.json.JsonSlurper;\nimport groovy.json.JsonBuilder;\nimport org.apache.http.entity.ContentType;\nimport org.apache.http.entity.StringEntity;\n\n//define credentials and url\ndef account = 'rfa';\ndef accessId = hostProps.get('api.user');\ndef accessKey = hostProps.get('api.pass');\n\ndef hostDeviceID = hostProps.get('system.deviceId').toInteger();\n\nif (accessId && accessKey && account) {\n\t// We have the three required properties, so it's worth continuing\n\tdef resourcePathBase = '/device/devices';\n\tdef fields = 'id,dataSourceId,dataSourceName,instanceNumber';\n\tdef filter = 'instanceNumber!:0'\n\t\n\tdef resourcePath = resourcePathBase + '/' + hostDeviceID + '/devicedatasources';\n\tdef queryParameters = \"?size=1000&fields=\" + fields + \"&filter=\" + filter;\n\t\t\t// Size set to 1000 as hard limit of what the API returns.\n\t\t\t// API defaults to 50 which for some customers may not be enough.\n\tdef url = \"https://\" + account + \".logicmonitor.com\" + \"/santaba/rest\" + resourcePath + queryParameters;\n\tdef data = '''''';\n\t\t\t// Triple-single quoted as content will include double quotes and may include singles.\n\t\t\t// Only used when updating data, but being blank elsewise shouldn't hurt. In for template purposes.\n\tdef verb = 'GET';\n\n\t//get current time\n\tepoch = System.currentTimeMillis();\n\n\t//calculate signature\n\trequestVars = verb + epoch + data + resourcePath;\n\n\thmac = Mac.getInstance('HmacSHA256');\n\tsecret = new SecretKeySpec(accessKey.getBytes(), 'HmacSHA256');\n\thmac.init(secret);\n\thmac_signed = Hex.encodeHexString(hmac.doFinal(requestVars.getBytes()));\n\tsignature = hmac_signed.bytes.encodeBase64();\n\n\t// HTTP Get\n\tCloseableHttpClient httpclient = HttpClients.createDefault();\n\thttpGet = new HttpGet(url);\n\thttpGet.addHeader('Authorization' , 'LMv1 ' + accessId + ':' + signature + ':' + epoch);\n\tresponse = httpclient.execute(httpGet);\n\tresponseBody = EntityUtils.toString(response.getEntity());\n\tcode = response.getStatusLine().getStatusCode();\n\n\thttpclient.close();\n\n\tif (code == 200)\n\t{\n\t\t// 200 response code (OK), meaning credentials are good. Slurp...\n\t\tdef allResponse = new JsonSlurper().parseText(responseBody);\n\n        // def legitimateDataSources = allResponse.data.total;\n\t\tdef activeDataSourceList = '';\n\t\t// LOOP THROUGH RESULTS:\n\t\tallResponse.data.items.each { dataSource ->\n\t\t\tdataSourceID = dataSource.id;\n\t\t\tdataSourceName = dataSource.dataSourceName;\n\n\t\t\tactiveDataSourceList += dataSourceName + '; ';\n\t\t\t\n//println dataSourceName;\n\t\t}\n\t\tprintln 'ActiveDataSources=' + activeDataSourceList;\n\t}\n\telse\n\t{\n\t\t// Haven't got a 200 response code, quite likely credentials.\n\t\t// Write something suitable to auto.monitoring, but no need to return a non-zero\n\t\t//  as we're not going to be alerting on the return code from a PropertySource.\n\t\tprintln 'ActiveDataSources=Cannot determine - GET from API failed with response code ' + code + '. Check credentials and filter syntax.';\n\t}\n}\nelse\n{\n\t// Should never get to this point unless AppliesTo has been changed from \"apiaccessid.key && apiaccesskey.key && isDevice()\"\n\tprintln 'ActiveDataSources=Cannot determine - No API credentials. Add apiaccessid.key and apiaccesskey.key';\n}\n\nreturn 0;"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1600182965,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "LogicMonitor_Host_AppliedDataSources",
+    "id": 163,
+    "group": "RFA Custom"
+}

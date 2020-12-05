@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isDevice()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "Write-Output \"credreveal.pass = ##INSERTCREDPROPHERE##\"\n#To use, add credential property in between '## ##', and press \"Test Script\". \n#WARNING: DO NOT SAVE THIS AFTER USE. YOU COULD RISK EXPOSING CREDS IN PROPERTIES PAGE."
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "powerShell"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1597958646,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "LogicMonitor_Cred_Viewer",
+    "id": 175,
+    "group": "RFA Custom"
+}

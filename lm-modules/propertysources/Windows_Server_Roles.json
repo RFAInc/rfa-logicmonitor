@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isWindows()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import com.santaba.agent.groovyapi.win32.WMI\n\nhostname=hostProps.get(\"system.hostname\") \nquery=\"Select NAME from Win32_serverfeature\"\n\nresult = (WMI.open(hostname)).queryAll(\"CIMv2\", query, 30);\nprintln \"windows.roles=\" + result.NAME"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1591070087,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "Windows_Server_Roles",
+    "id": 164,
+    "group": "RFA Custom"
+}

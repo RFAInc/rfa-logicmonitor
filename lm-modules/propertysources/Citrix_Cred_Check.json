@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isDDC()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "$Hostname = '##HOSTNAME##'\n$XenAppUser = '##XENAPP.USER##'\n$XenAppPass = '##XENAPP.PASS##'\n\n$uri = \"http://${Hostname}/Citrix/Monitor/Odata/v2/Data/Catalogs\"\n\ntry {\n    if (($XenAppUser -like \"*XENAPP.USER*\") -or ($XenAppPass -like \"*XENAPP.PASS*\") -or ($XenAppUser -eq \"\") -or ($XenAppPass -eq \"\")) {\n        $resp = Invoke-RestMethod -Uri $uri -UseDefaultCredentials\n    } else {\n        $securePass = ConvertTo-SecureString -String $XenAppPass -AsPlainText -Force\n        $creds = New-Object -TypeName \"System.Management.Automation.PSCredential\" -ArgumentList $XenAppUser, $securePass\n        $resp = Invoke-RestMethod -Uri $uri -Credential $creds\n    }\n    Write-Host \"citrix.working=yes\"\n}\ncatch [System.Net.WebException] {\n    Write-Host \"citrix.working=no\"\n}"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "powerShell"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1591212022,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "Citrix_Cred_Check",
+    "id": 162,
+    "group": "RFA Custom"
+}

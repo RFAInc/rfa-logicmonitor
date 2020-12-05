@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "system.virtualization =~ \"VMware ESX\"",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import com.vmware.vim25.InvalidLoginFaultMsg;\nimport com.santaba.agent.groovyapi.esx.ESX;\nimport com.santaba.agent.util.PingHelper;\n\ndef host = hostProps.get(\"system.hostname\")\ndef user = hostProps.get(\"esx.user\");\ndef pass = hostProps.get(\"esx.pass\");\ndef addr = hostProps.get(\"esx.url\") ?: \"https://${host}/sdk\";\n\ndef ping = PingHelper.proxyPing(host, 4, 500);\ndef service = new ESX();\n\nif(!ping[PingHelper.PING_RECD])\n{\n\treturn 0;\n}\n\ntry\n{\n    service.open(addr, user, pass, 10 * 1000); // timeout in 10 seconds\n    println \"wmare.working=yes\"\n}\ncatch (Exception ex)\n{\n    println \"vmware.working=no\"\n}\n\nreturn 0;"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1591116843,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "VMware_Cred_Check",
+    "id": 161,
+    "group": "RFA Custom"
+}

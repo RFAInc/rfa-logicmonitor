@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "Adds \"snmp.working=yes\" if SNMP is reachable and OID .1.3.6.1.2.1.1.1.0 exists; otherwise add \"snmp.working=no\".",
+    "appliesTo": "hasCategory(\"snmp\") || (!isvmWare && !isWindows() && !isCloud())",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "// import the logicmonitor snmp helper class\nimport com.santaba.agent.groovyapi.snmp.Snmp;\n\n// get the snmp host from the device properties\ndef host = hostProps.get('system.hostname');\n\n// retrieve the value for the specified OID\ntry \n{\n    oid_value = Snmp.get(host, \".1.3.6.1.2.1.1.1.0\");\n    println \"snmp.working=yes\"\n}\ncatch (Exception ex)\n{\n    println \"snmp.working=no\";\n}\n\nreturn (0);"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1606841610,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "SNMP_Cred_Check",
+    "id": 137,
+    "group": "RFA Custom"
+}
