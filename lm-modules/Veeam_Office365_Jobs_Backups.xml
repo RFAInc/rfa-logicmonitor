@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1610563865</version>
+        <name>Veeam_Office365_Jobs_Backups</name>
+        <displayedas>Office365 Backups</displayedas>
+        <description></description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <schedule>180</schedule>
+        <appliesTo>isVeeam365()</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>true</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$HostName = &#34;##system.sysname##&#34;
+$Username = &#34;##wmi.user##&#34;
+$Password = &#34;##wmi.pass##&#34;
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+$Script = {
+    $Jobs = Get-VBOJob
+    foreach ($x in $Jobs) {
+        $obj = [PSCustomObject]@{
+            Id = $x.Id
+            Organization = $x.Organization
+            Name = $x.Name
+            Description = $x.Description
+            JobBackupType = $x.JobBackupType
+            SelectedItems = $x.SelectedItems
+            ExcludedItems = $x.ExcludedItems
+            SelectedOneDriveFolders = $x.SelectedOneDriveFolders
+            ExcludedOneDriveFolders = $x.ExcludedOneDriveFolders
+            Repository = $x.Repository
+            LastStatus = $x.LastStatus
+            LastRun = $x.LastRun
+            NextRun = $x.NextRun
+            IsEnabled = $x.IsEnabled
+            SchedulePolicy = $x.SchedulePolicy
+        }
+        Write-Output $obj
+    }
+}
+
+Try {
+    # For self-collected resources
+    if ($HostName -eq $env:computername) {
+        $DataSet = Invoke-Command -ScriptBlock $Script
+    # For remote-collected resources
+    } else {
+        # Use creds if available, otherwise, attempt without them
+        if ($UserName -and $Password) {
+            $Credentials = New-Object System.Management.Automation.PSCredential ($UserName, $(ConvertTo-SecureString $Password -AsPlainText -Force))
+            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials
+        } else {
+            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials
+        }
+    }
+}
+Catch{
+    Exit 1
+}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Discovery Output
+foreach ($i in $DataSet) {
+    $Instance = $i
+    Write-Output &#34;$($Instance.Id)##$($Instance.Name)##$($Instance.Repository)####auto.veeam.organization=$($Instance.Organization)&#38;auto.veeam.description=$($Instance.Description)&#38;auto.veeam.jobbackuptype=$($Instance.JobBackupType)&#38;auto.veeam.selecteditems=$($Instance.SelectedItems)&#38;auto.veeam.excludeditems=$($Instance.ExcludedItems)&#38;auto.veeam.selectedonedrivefolders=$($Instance.SelectedOneDriveFolders)&#38;auto.veeam.excludedonedrivefolders=$($Instance.ExcludedOneDriveFolders)&#38;auto.veeam.repository=$($Instance.Repository)&#38;auto.veeam.lastrun=$($Instance.LastRun)&#38;auto.veeam.nextrun=$($Instance.NextRun)&#38;auto.veeam.isenabled=$($Instance.IsEnabled)&#38;auto.veeam.schedulepolicy=$($Instance.SchedulePolicy)&#38;auto.veeam.lastbackupstatus=$($Instance.laststatus)&#34;
+}
+</wildcardgroovyscript>
+        <wildcardschedule>0</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>Veeam</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[{"attribute":"auto.veeam.isenabled","operation":"Equal","value":"True"}],"params":{"type":"powerShell","groovyscript":"<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n# Loads credentials from device properties\n$HostName = \"##system.sysname##\"\n$Username = \"##wmi.user##\"\n$Password = \"##wmi.pass##\"\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n$Script = {\n    $Jobs = Get-VBOJob\n    foreach ($x in $Jobs) {\n        $obj = [PSCustomObject]@{\n            Id = $x.Id\n            Organization = $x.Organization\n            Name = $x.Name\n            Description = $x.Description\n            JobBackupType = $x.JobBackupType\n            SelectedItems = $x.SelectedItems\n            ExcludedItems = $x.ExcludedItems\n            SelectedOneDriveFolders = $x.SelectedOneDriveFolders\n            ExcludedOneDriveFolders = $x.ExcludedOneDriveFolders\n            Repository = $x.Repository\n            LastStatus = $x.LastStatus\n            LastRun = $x.LastRun\n            NextRun = $x.NextRun\n            IsEnabled = $x.IsEnabled\n            SchedulePolicy = $x.SchedulePolicy\n        }\n        Write-Output $obj\n    }\n}\n\nTry {\n    # For self-collected resources\n    if ($HostName -eq $env:computername) {\n        $DataSet = Invoke-Command -ScriptBlock $Script\n    # For remote-collected resources\n    } else {\n        # Use creds if available, otherwise, attempt without them\n        if ($UserName -and $Password) {\n            $Credentials = New-Object System.Management.Automation.PSCredential ($UserName, $(ConvertTo-SecureString $Password -AsPlainText -Force))\n            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials\n        } else {\n            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials\n        }\n    }\n}\nCatch{\n    Exit 1\n}\n\n#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#\n\n# Discovery Output\nforeach ($i in $DataSet) {\n    $Instance = $i\n    Write-Output \"$($Instance.Id)##$($Instance.Name)##$($Instance.Repository)####auto.veeam.organization=$($Instance.Organization)&auto.veeam.description=$($Instance.Description)&auto.veeam.jobbackuptype=$($Instance.JobBackupType)&auto.veeam.selecteditems=$($Instance.SelectedItems)&auto.veeam.excludeditems=$($Instance.ExcludedItems)&auto.veeam.selectedonedrivefolders=$($Instance.SelectedOneDriveFolders)&auto.veeam.excludedonedrivefolders=$($Instance.ExcludedOneDriveFolders)&auto.veeam.repository=$($Instance.Repository)&auto.veeam.lastrun=$($Instance.LastRun)&auto.veeam.nextrun=$($Instance.NextRun)&auto.veeam.isenabled=$($Instance.IsEnabled)&auto.veeam.schedulepolicy=$($Instance.SchedulePolicy)&auto.veeam.lastbackupstatus=$($Instance.laststatus)\"\n}\n"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>powerShell</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>&#60;#
+.NOTES
+    Author:     Andy Escolastico
+#&#62;
+#----------------------------------------------------------[Declarations]----------------------------------------------------------#
+
+# Loads credentials from device properties
+$HostName = &#34;##system.sysname##&#34;
+$Username = &#34;##wmi.user##&#34;
+$Password = &#34;##wmi.pass##&#34;
+
+#-----------------------------------------------------------[Execution]------------------------------------------------------------#
+
+$Script = {
+    $Jobs = Get-VBOJob
+    foreach ($x in $Jobs) {
+        $obj = [PSCustomObject]@{
+            Id = $x.Id
+            Organization = $x.Organization
+            Name = $x.Name
+            Description = $x.Description
+            JobBackupType = $x.JobBackupType
+            SelectedItems = $x.SelectedItems
+            ExcludedItems = $x.ExcludedItems
+            SelectedOneDriveFolders = $x.SelectedOneDriveFolders
+            ExcludedOneDriveFolders = $x.ExcludedOneDriveFolders
+            Repository = $x.Repository
+            LastStatus = $x.LastStatus
+            LastRun = $x.LastRun
+            NextRun = $x.NextRun
+            IsEnabled = $x.IsEnabled
+            SchedulePolicy = $x.SchedulePolicy
+        }
+        Write-Output $obj
+    }
+}
+
+Try {
+    # For self-collected resources
+    if ($HostName -eq $env:computername) {
+        $DataSet = Invoke-Command -ScriptBlock $Script
+    # For remote-collected resources
+    } else {
+        # Use creds if available, otherwise, attempt without them
+        if ($UserName -and $Password) {
+            $Credentials = New-Object System.Management.Automation.PSCredential ($UserName, $(ConvertTo-SecureString $Password -AsPlainText -Force))
+            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials
+        } else {
+            $DataSet = Invoke-Command -ScriptBlock $Script -ComputerName $HostName -Credential $Credentials
+        }
+    }
+}
+Catch{
+    Exit 1
+}
+
+#-----------------------------------------------------------[LogicMonitor Output]------------------------------------------------------------#
+
+# Batch Collection Output
+$StatusMap = @{
+    Success = 0
+    Warning = 1
+    Error = 2 #unknown if error or failure
+}
+
+foreach ($i in $DataSet) {
+    $Instance = $i
+    $StatusCode = $StatusMap.&#34;$($Instance.LastStatus)&#34;
+    Write-Output &#34;$($Instance.Id).LastBackupStatus=$StatusCode&#34;
+    Write-Output &#34;$($Instance.Id).HoursSinceLastBackup=$((New-TimeSpan -Start &#34;$($Instance.LastRun)&#34; -End $(Get-Date)).TotalHours)&#34;
+}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>__filter_0</name>
+            <value>auto.veeam.isenabled	Equal	True</value>
+            <comment>No need to alert on disabled jobs</comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>LastBackupStatus</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.LastBackupStatus</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>0 = Success,
+1 = Warning,  
+2 = Error</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>HoursSinceLastBackup</name>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.HoursSinceLastBackup</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>

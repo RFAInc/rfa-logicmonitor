@@ -1,0 +1,46 @@
+{
+    "scheduleOption": 0,
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "isDevice()",
+    "technology": "",
+    "type": "propertyrule",
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "<#\n.NOTES\n    Author:     Andy Escolastico\n#>\n#----------------------------------------------------------[Declarations]----------------------------------------------------------#\n\n# pa variables\n$paIP = \"##system.hostname##\"\n\n#-----------------------------------------------------------[Functions]------------------------------------------------------------#\n\n(new-object Net.WebClient).DownloadString('https://raw.githubusercontent.com/RFAInc/rfa-backups/main/general-functions.ps1') | Invoke-Expression\n\n#-----------------------------------------------------------[Execution]------------------------------------------------------------#\n\n# Ignores invalid certificate errors\nSkip-InvalidCertErrors\n\n# pa request\n$paRequest = @{\n    Method = \"GET\"\n    Uri = \"https://$paIP\"\n}\n$paResponse = Invoke-WebRequest @paRequest -UseBasicParsing\n\nif ($paResponse.Content -match \"BEGIN PAN_FORM_CONTENT\") {\n    Write-Output \"system.categories=paloalto\"\n} else {\n    exit 0\n}"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "powerShell"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1607153722,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "addCategory_PaloAlto",
+    "id": 182,
+    "group": "RFA Custom"
+}
