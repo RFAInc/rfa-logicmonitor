@@ -1,7 +1,7 @@
 #import credentials
 . ./lmAPICreds.ps1
 $company = 'rfa'
-$csvfile = "./creds.csv"
+$csvfile = "../../orgCreds.csv"
 
 # Functionize the reusable code that builds and executes the query
 function Send-Request() {

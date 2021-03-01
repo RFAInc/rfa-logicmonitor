@@ -1,7 +1,5 @@
-companies.csv
-companies-master.csv
-test-companies.csv
 .DS_Store
-last_run.log
-lmAPICreds.ps1
 credentials.ps1
+creds
+csvs
+reports
