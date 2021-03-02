@@ -11,7 +11,7 @@ $LogPath = "./reports/device-imports_$(Get-Date -format "MM-dd-yy_HH-mm").log"
 $CsvPath = "./reports/device-imports__$(Get-Date -format "MM-dd-yy_HH-mm").csv"
 #-----------------------------------------------------------[Functions]------------------------------------------------------------
 . ./creds/lm-api-creds.ps1
-. ./api-functions.ps1
+. ./modules/rfa-logicmonitor.ps1
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 #get collectors
 $CGRequest = @{

@@ -10,7 +10,7 @@
 $BackupDir = "./backups/$(Get-Date -Format 'MM-dd-yyyy')"
 #-----------------------------------------------------------[Functions]------------------------------------------------------------
 . ./creds/lm-api-creds.ps1
-. ./api-functions.ps1
+. ./modules/rfa-logicmonitor.ps1
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 $DSRequest = @{
     tenantName = $tenantName 
