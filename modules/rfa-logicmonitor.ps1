@@ -358,28 +358,28 @@ function Get-ClientResources {
         $_ | Add-Member -MemberType "NoteProperty" -Name "isStorage" -Value $isStorage
         if ($_.groups -match ".*/Locations/New Devices.*") { $isNewDevice = $true } else { $isNewDevice = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isNewDevice" -Value $isNewDevice
-        $DataSourceRequest = @{
-            tenantName = $tenantName 
-            accessId = $accessId 
-            accessKey = $accessKey 
-            httpVerb = "GET" 
-            resourcePath = "/device/devices/$($_.id)/devicedatasources" 
-            queryParams = '?size=1000&filter=instanceNumber!:0' 
-            Version = 1
-        }
-        $DataSources = (Invoke-LMAPI @DataSourceRequest | Select-Object -ExpandProperty dataSourceName) -join "; "
-        $_ | Add-Member -MemberType "NoteProperty" -Name "dataSources" -Value $DataSources
-        if ($DataSources -match ".*Troubleshooter.*") { $TroubleshooterActive = $true } else { $TroubleshooterActive = $false } 
-        $_ | Add-Member -MemberType "NoteProperty" -Name "troubleshooterActive" -Value $TroubleshooterActive
-        Start-Sleep -Milliseconds 100
+        # $DataSourceRequest = @{
+        #     tenantName = $tenantName 
+        #     accessId = $accessId 
+        #     accessKey = $accessKey 
+        #     httpVerb = "GET" 
+        #     resourcePath = "/device/devices/$($_.id)/devicedatasources" 
+        #     queryParams = '?size=1000&filter=instanceNumber!:0' 
+        #     Version = 1
+        # }
+        # $DataSources = (Invoke-LMAPI @DataSourceRequest | Select-Object -ExpandProperty dataSourceName) -join "; "
+        # $_ | Add-Member -MemberType "NoteProperty" -Name "dataSources" -Value $DataSources
+        # if ($DataSources -match ".*Troubleshooter.*") { $TroubleshooterActive = $true } else { $TroubleshooterActive = $false } 
+        # $_ | Add-Member -MemberType "NoteProperty" -Name "troubleshooterActive" -Value $TroubleshooterActive
+        # Start-Sleep -Milliseconds 100
     }
     $Result = @()
     foreach ($Resource in $Resources){
-        if ($Resource.Datasources -like "*Troubleshooter*") {
-            $Resource.troubleshooterActive = $true
-        } else {
-            $Resource.troubleshooterActive = $false
-        }
+        # if ($Resource.Datasources -like "*Troubleshooter*") {
+        #     $Resource.troubleshooterActive = $true
+        # } else {
+        #     $Resource.troubleshooterActive = $false
+        # }
         $Result += $Resource
     }
     $Result    
