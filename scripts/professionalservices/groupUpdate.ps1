@@ -473,7 +473,7 @@ foreach ($line in $data) {
     $topologyId = (checkIfExists -groups $topologygroups -name $customer -type "topologygroup").id
     
     $collectorProperties = @{
-        autoBalanced     = $true
+        autoBalance     = $true
         customProperties = @(
             @{
                 name  = "company.id"
