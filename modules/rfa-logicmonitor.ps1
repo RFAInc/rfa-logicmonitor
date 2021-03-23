@@ -521,5 +521,6 @@ function Get-RolesWoCRG {
 
 }
 function Get-ResourcesWiPubIP {
-
+    $Resources = Get-ClientResources
+    $Resources | Where-Object { ($_.name -match "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}") -and ($_.name -notmatch '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') -and ($_.collectorDescription -ne "Cloud Collector")} 
 }
