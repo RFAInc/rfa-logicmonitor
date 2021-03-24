@@ -23,7 +23,7 @@ for ($i=1; $strCompany; $i++) {
         # Get Locations (Not New Computers)
         $Locations = Invoke-RfaLtSqlCommand "SELECT Name FROM locations WHERE clientid = (
             SELECT clientid FROM clients WHERE ExternalID=$($thisCompany.ExternalID)
-        )" | Select-Object -ExpandProperty Name
+        ) AND Name != 'New Computers'" | Select-Object -ExpandProperty Name
         
         # Add to array
         $CompanyRecords += [PSCustomObject]@{
@@ -37,6 +37,7 @@ for ($i=1; $strCompany; $i++) {
 
 # Export array as file
 $InitialDirectory = Join-Path $env:USERPROFILE 'Downloads'
-$Path = Show-GuiFilePicker -InitialDirectory $InitialDirectory -Extension 'csv' -Single -OutString
+$Save = 'Save file as...'
+$Path = Show-GuiFilePicker -InitialDirectory $InitialDirectory -Extension 'csv' -Single -OutString -Title $Save
 $CompanyRecords | Export-Csv $Path -NoTypeInfo
 Get-Item $Path
