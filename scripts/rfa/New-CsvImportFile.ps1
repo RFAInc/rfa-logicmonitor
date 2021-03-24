@@ -2,6 +2,11 @@
 
 $CompanyRecords = @()
 
+# Define the regex pattern for illegal characters for company name (each separated by "|" or char
+$ptnCompanyIllegalChars = '\/|\\'
+# These will be replaced with a hyphen "-"
+
+
 # Get data from DB
 $Companies = Invoke-RfaLtSqlCommand "Select Company,ExternalID FROM clients" |
     Where-Object {$_.Company} | Sort-Object Company
@@ -28,7 +33,7 @@ for ($i=1; $strCompany; $i++) {
         # Add to array
         $CompanyRecords += [PSCustomObject]@{
             companyID = $thisCompany.ExternalID
-            companyName = $thisCompany.Company
+            companyName = $thisCompany.Company -replace $ptnCompanyIllegalChars,'-'
             companyLocations = ($Locations -join ';')
         }
     }
