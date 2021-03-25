@@ -1,8 +1,8 @@
 #import credentials
 . ./creds/lm-api-creds.ps1
-$company = 'rfa'
-$csvfile = "./csvs/companies.csv"
-$desiredCloneGroup = "Categories"
+$company = 'rfa' # should not ever change (top level of our instance)
+$csvfile = "./csvs/companies.csv" # Can be changed, but easier to overwrite this file each time
+$desiredCloneGroup = "Categories" # Should not change unless we alter our group structure
 
 # Functionize the reusable code that builds and executes the query
 function Send-Request() {
