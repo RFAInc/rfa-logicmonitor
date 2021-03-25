@@ -92,3 +92,13 @@ $ATRequest = @{
 }
 
 $ATs = Invoke-LMAPI @ATRequest
+if (-not (Test-Path "$BackupDir/appliesto")) {
+    New-Item -ItemType "Directory" -Path "$BackupDir/appliesto" -Force
+}
+$ATs | ConvertTo-Json -Depth 10 | Out-File "$BackupDir/appliesto/appliesto.json" -Force
+
+$Devices = Get-ClientResources
+if (-not (Test-Path "$BackupDir/devices")) {
+    New-Item -ItemType "Directory" -Path "$BackupDir/devices" -Force
+}
+$Devices | ConvertTo-Json -Depth 10 | Out-File "$BackupDir/devices/devices.json" -Force
