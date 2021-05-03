@@ -1,4 +1,5 @@
 function Invoke-LMAPI {
+
     Param(
         [Parameter(Mandatory=$true)] 
         [String] $tenantName,
@@ -17,25 +18,30 @@ function Invoke-LMAPI {
         [Parameter(Mandatory = $false)]
         [int]$version = 3
     )
+    
     if ($httpBody -and $httpBody -isnot [string]) { $httpBody = $httpBody | ConvertTo-Json -Depth 10 }
-    # Use TLS 1.2
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    
     <# Construct URL #>
     $url = "https://$tenantName.logicmonitor.com/santaba/rest$resourcePath$queryParams"
+    
     <# Get current time in milliseconds #>
     $epoch = [Math]::Round((New-TimeSpan -start (Get-Date -Date "1/1/1970") -end (Get-Date).ToUniversalTime()).TotalMilliseconds)
+    
     <# Concatenate Request Details #>
     $requestVars = $httpVerb + $epoch + $httpBody + $resourcePath
+    
     <# Construct Signature #>
     $hmac = New-Object System.Security.Cryptography.HMACSHA256
     $hmac.Key = [Text.Encoding]::UTF8.GetBytes($accessKey)
     $signature = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(([System.BitConverter]::ToString($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($requestVars))) -replace '-').ToLower()))
+    
     <# Construct Headers #>
     $auth = 'LMv1 ' + $accessId + ':' + $signature + ':' + $epoch
     $httpHeaders = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
     $httpHeaders.Add("Authorization", $auth)
     $httpHeaders.Add("Content-Type", 'application/json')
     $httpHeaders.Add("X-version", $version)
+    
     <# Construct Request #>
     $request = @{  
         Uri = $url
@@ -43,6 +49,7 @@ function Invoke-LMAPI {
         Headers = $httpHeaders
     }
     if ($httpVerb -ne "GET"){$request.Body = $httpBody}
+    
     <# Make request & retry if failed due to rate limiting #>
     $finalDataSet = @()
     try {
@@ -67,6 +74,7 @@ function Invoke-LMAPI {
             }
         }
     }
+
     <# Collect data from response #>
     if ($version -eq 1) {
         $data = $response.data.items
@@ -82,6 +90,7 @@ function Invoke-LMAPI {
         $data = $response.Content
     }
     $finalDataSet += $data 
+
     <# Determine if more requests are needed to return full dataset #>
     $offset = $finalDataSet.count
     while ($finalDataSet.count -lt [int]$total) {
@@ -112,10 +121,15 @@ function Invoke-LMAPI {
         $offset = $finalDataSet.count
         $request.Uri = $ogURI
     }
+
     return $finalDataSet
-}
+
+}#END: function Invoke-LMAPI
+
 function New-RFALogicMonitorSDT {
+
     [CmdletBinding()]
+    
     param (
         [Parameter(Mandatory=$true)]
         [string]$jobRunnerUri,
@@ -136,6 +150,7 @@ function New-RFALogicMonitorSDT {
         [Parameter(Mandatory=$false)]
         [string]$sdtNote
     )
+
     # TODO: add conditional to check if date is in epoch time before converting. catch exceptions when attempting to convert
     $sdtStartTime = (New-TimeSpan -Start (Get-Date "01/01/1970") -End (Get-Date $sdtStartTime)).TotalMilliseconds
     $sdtEndTime = (New-TimeSpan -Start (Get-Date "01/01/1970") -End (Get-Date $sdtEndTime)).TotalMilliseconds
@@ -149,9 +164,11 @@ function New-RFALogicMonitorSDT {
         deviceSerialNumber = $deviceSerialNumber
         deviceLocalIPAddress = $deviceIPAddress
     } | ConvertTo-Json
+
     $Result = Invoke-WebRequest -Uri $jobRunnerUri -Method "POST" -Body $body -ContentType 'application/json'
     Write-Output $Result
-}
+
+}#END: function New-RFALogicMonitorSDT
 
 function New-LMDevice {
     Param(
@@ -200,9 +217,10 @@ function New-LMDevice {
         version = 3
     }
     Invoke-LMAPI @Request
-}
+}#END: function New-LMDevice
 
-function Invoke-LomoApi() {
+function Invoke-LomoApi {
+
     Param(
         [Parameter(Mandatory=$true)] 
         [String] $tenantName,
@@ -221,19 +239,23 @@ function Invoke-LomoApi() {
         [Parameter(Mandatory = $false)]
         [int]$version = 3
     )
+
     if ($httpBody -and $httpBody -isnot [string]) { $httpBody = $httpBody | ConvertTo-Json -Depth 10 }
-    # Use TLS 1.2
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
     <# Construct URL #>
     $url = "https://$tenantName.logicmonitor.com/santaba/rest$resourcePath$queryParams"
+    
     <# Get current time in milliseconds #>
     $epoch = [Math]::Round((New-TimeSpan -start (Get-Date -Date "1/1/1970") -end (Get-Date).ToUniversalTime()).TotalMilliseconds)
+    
     <# Concatenate Request Details #>
     $requestVars = $httpVerb + $epoch + $httpBody + $resourcePath
+    
     <# Construct Signature #>
     $hmac = New-Object System.Security.Cryptography.HMACSHA256
     $hmac.Key = [Text.Encoding]::UTF8.GetBytes($accessKey)
     $signature = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(([System.BitConverter]::ToString($hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($requestVars))) -replace '-').ToLower()))
+    
     <# Construct Headers #>
     $auth = 'LMv1 ' + $accessId + ':' + $signature + ':' + $epoch
     $httpHeaders = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
@@ -258,6 +280,7 @@ function Invoke-LomoApi() {
             $Stoploop = $true
         }
         catch {
+
             switch ($_) {
                 { $_.Exception.Response.StatusCode.value__ -eq 429 } {
                     Write-Host "Request exceeded rate limit, retrying in 60 seconds..."
@@ -269,13 +292,18 @@ function Invoke-LomoApi() {
                     $Stoploop = $true
                 }
             }
+
         }
+
     } while ($Stoploop -eq $false)
+
     return $response
-}
+
+}#END: function Invoke-LomoApi
 
 
 function Get-ClientResourceGroups {
+
     $RGRequest = @{
         tenantName = $tenantName 
         accessId = $accessId 
@@ -285,8 +313,11 @@ function Get-ClientResourceGroups {
         queryParams = '?size=1000&filter=name:Devices by Organization' 
         Version = 1
     }
+    
     $ResourceGroups = (Invoke-LMAPI @RGRequest).subGroups
+
     $ResourceGroups | ForEach-Object {
+
         $RGPropRequest = @{
             tenantName = $tenantName 
             accessId = $accessId 
@@ -296,16 +327,22 @@ function Get-ClientResourceGroups {
             queryParams = '?fields=customProperties,defaultCollectorId,defaultCollectorGroupId,defaultAutoBalancedCollectorGroupId'
             Version = 1
         }
+
         # Old function is being used here. Need to update New function to handle format returned by this endpoint. 
         $RGProps = (Invoke-LOMOAPI @RGPropRequest).data
         $_ | Add-Member -MemberType "NoteProperty" -Name "companyID" -Value (($RGProps.customProperties | Where-Object {$_.name -eq "company.id"}).value)
         $_ | Add-Member -MemberType "NoteProperty" -Name "defaultCollectorId" -Value $RGProps.defaultCollectorId
         $_ | Add-Member -MemberType "NoteProperty" -Name "defaultCollectorGroupId" -Value $RGProps.defaultCollectorGroupId
         $_ | Add-Member -MemberType "NoteProperty" -Name "defaultAutoBalancedCollectorGroupId" -Value $RGProps.defaultAutoBalancedCollectorGroupId
+
     }
+
     $ResourceGroups
-}
+
+}#END: function Get-ClientResourceGroups
+
 function Get-ClientCollectorGroups {
+    
     $CGRequest = @{
         tenantName = $tenantName 
         accessId = $accessId 
@@ -315,16 +352,24 @@ function Get-ClientCollectorGroups {
         queryParams = '?size=10000' 
         Version = 1
     }
+    
     $CollectorGroups = Invoke-LMAPI @CGRequest
+    
     $CollectorGroups | ForEach-Object { 
+    
         $CollectorGroupCompanyID = $_.customProperties | ForEach-Object { 
             ($_ | Where-Object {$_.name -eq "company.id"}).value
         } 
         $_ | Add-Member -MemberType "NoteProperty" -Name "companyID" -Value $CollectorGroupCompanyID
+    
     }
+    
     $CollectorGroups
-}
+
+}#END: function Get-ClientCollectorGroups
+
 function Get-ClientResources {
+
     $ResourceRequest = @{
         tenantName = $tenantName 
         accessId = $accessId 
@@ -334,30 +379,44 @@ function Get-ClientResources {
         queryParams = '?size=1000' 
         Version = 3
     }
+
     $Resources = Invoke-LMAPI @ResourceRequest
+
     $Resources | ForEach-Object { 
+
         $ResourceCompanyID = ($_.inheritedProperties | Where-Object {$_.name -eq "company.id"}).value
         $_ | Add-Member -MemberType "NoteProperty" -Name "companyID" -Value $ResourceCompanyID
+        
         $StaticGroups = ($_.systemProperties | Where-Object {$_.name -eq "system.staticgroups"}).value
         $_ | Add-Member -MemberType "NoteProperty" -Name "staticGroups" -Value $StaticGroups
+        
         $Groups = ($_.systemProperties | Where-Object {$_.name -eq "system.groups"}).value
         $_ | Add-Member -MemberType "NoteProperty" -Name "groups" -Value $Groups
+        
         $Sysname = ($_.systemProperties | Where-Object {$_.name -eq "system.sysname"}).value
         $_ | Add-Member -MemberType "NoteProperty" -Name "sysname" -Value $Sysname
+        
         $CompanyName = (@($_.staticGroups)[0] -split ("/"))[1] 
         $_ | Add-Member -MemberType "NoteProperty" -Name "companyName" -Value $CompanyName    
+        
         if ($_.groups -match ".*/Type/Server.*") { $isServer = $true } else { $isServer = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isServer" -Value $isServer
+        
         if ($_.groups -match ".*/Type/Network.*") { $isNetwork = $true } else { $isNetwork = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isNetwork" -Value $isNetwork
+        
         if ($_.groups -match ".*/Type/Environmental.*") { $isEnvironmental = $true } else { $isEnvironmental = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isEnvironmental" -Value $isEnvironmental
+        
         if ($_.groups -match ".*/Type/Cloud.*") { $isCloud = $true } else { $isCloud = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isCloud" -Value $isCloud
+        
         if ($_.groups -match ".*/Type/Storage.*") { $isStorage = $true } else { $isStorage = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isStorage" -Value $isStorage
+        
         if ($_.groups -match ".*/Locations/New Devices.*") { $isNewDevice = $true } else { $isNewDevice = $false }
         $_ | Add-Member -MemberType "NoteProperty" -Name "isNewDevice" -Value $isNewDevice
+        
         # $DataSourceRequest = @{
         #     tenantName = $tenantName 
         #     accessId = $accessId 
@@ -372,24 +431,33 @@ function Get-ClientResources {
         # if ($DataSources -match ".*Troubleshooter.*") { $TroubleshooterActive = $true } else { $TroubleshooterActive = $false } 
         # $_ | Add-Member -MemberType "NoteProperty" -Name "troubleshooterActive" -Value $TroubleshooterActive
         # Start-Sleep -Milliseconds 100
+
     }
+
     $Result = @()
     foreach ($Resource in $Resources){
+    
         # if ($Resource.Datasources -like "*Troubleshooter*") {
         #     $Resource.troubleshooterActive = $true
         # } else {
         #     $Resource.troubleshooterActive = $false
         # }
         $Result += $Resource
+    
     }
+    
     $Result    
-}
+
+}#END: function Get-ClientResources
+
 function Get-ClientCollectors {
+
     $LMAuth = @{
         tenantName = $tenantName 
         accessId = $accessId 
         accessKey = $accessKey 
     }
+    
     $CollectorRequest = @{
         tenantName = $tenantName 
         accessId = $accessId 
@@ -399,53 +467,67 @@ function Get-ClientCollectors {
         queryParams = '?size=1000' 
         Version = 1
     }
+    
     $Collectors = Invoke-LMAPI @CollectorRequest
+    
     $Collectors | ForEach-Object {
         $CollectorCompanyID = ($_.customproperties | Where-Object {$_.name -eq "company.id"}).value
         $_ | Add-Member -MemberType "NoteProperty" -Name "companyID" -Value $CollectorCompanyID
     }
+    
     $Collectors
-}
+}#END: function Get-ClientCollectors
+
 function Get-EmptyClientCollectorGroups {
     $CollectorGroups = Get-ClientCollectorGroups
     $CollectorGroups | Where-Object {$_.numOfCollectors -eq 0} 
 }
+
 function Get-EmptyClientResourceGroups {
     $ResourceGroups = Get-ClientResourceGroups
     $ResourceGroups | Where-Object {$_.numOfHosts -eq 0} 
 }
+
 function Get-DeadResources {
     $Resources = Get-ClientResources
     $Resources | Where-Object {($_.hostStatus -eq "dead") } 
 }
+
 function Get-ResourcesWiIPAsDN {
     $Resources = Get-ClientResources
     $Resources | Where-Object { ($_.displayName -match '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}') -and ($_.collectorDescription -ne "Cloud Collector")} 
 }
+
 function Get-ResourcesWiDNforPolling {
     $Resources = Get-ClientResources
     $Resources | Where-Object { ($_.name -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}') -and ($_.collectorDescription -ne "Cloud Collector") -and ($_.StaticGroups -notmatch ".*Portals.*")} 
 }
+
 function Get-ResourcesWoSysname {
     $Resources = Get-ClientResources
     $Resources | Where-Object { ($_.sysname -eq $null) -and ($_.collectorDescription -ne "Cloud Collector")} 
 }
+
 function Get-CloudResources {
     $Resources = Get-ClientResources
     $Resources | Where-Object { $_.collectorDescription -eq "Cloud Collector"} 
 }
+
 function Get-ResourcesWoLocationGroup {
     $Resources = Get-ClientResources
     $Resources | Where-Object { (($_.staticGroups -match ".*New Devices.*") -or ($_.StaticGroups -notmatch ".*Locations.*")) -and ($_.collectorDescription -ne "Cloud Collector") -and (($_.StaticGroups -notmatch ".*Portals.*"))} 
 }
+
 function Get-ResourcesWiTroubleshooterActive {
     $Resources = Get-ClientResources
     $Resources | Where-Object { $_.activeDataSources -match ".*Troubleshooter.*" }
 }
+
 function Get-ResourcesWiSharedCollector {
     $Resources = Get-ClientResources
     $Resources | Where-Object { $_.preferredCollectorGroupName -like "*Shared*" } 
 }
+
 function Get-ResourcesWoABCG {
     $Resources = Get-ClientResources
     $Resources | Where-Object { $_.autoBalancedCollectorGroupId -eq "0" } 
@@ -454,17 +536,23 @@ function Get-CollectorsWoEC {
     $Collectors = Get-ClientCollectors
     $Collectors | Where-Object {$_.escalatingChainId -eq "0"} 
 }
+
 function Get-DownCollectors {
     $Collectors = Get-ClientCollectors
     $Collectors | Where-Object {$_.isDown -eq "True"} 
 }
+
 function Get-CollectorIPs {
+
     $Collectors = Get-ClientCollectors | Where-Object {$_.isDown -eq $false}
+
     $Result = @()
     foreach ($i in $Collectors) {
+
         $DGSessionBody = @{
             cmdline = "!ipaddress"
         }
+
         $DGSessionRequest = @{
             tenantName = $tenantName 
             accessId = $accessId 
@@ -475,7 +563,9 @@ function Get-CollectorIPs {
             httpBody = $DGSessionBody | ConvertTo-Json
             Version = 3
         }
+
         $DebugCommandSession = Invoke-LomoAPI @DGSessionRequest
+
         $DGOutputRequest = @{
             tenantName = $tenantName 
             accessId = $accessId 
@@ -485,42 +575,63 @@ function Get-CollectorIPs {
             queryParams = "?collectorId=$($i.id)"
             Version = 3
         }
+
         $DebugCommandOutput = Invoke-LomoAPI @DGOutputRequest
+
         $Capture = $DebugCommandOutput.Output | Select-String -Pattern “IPV4.*:\s(.*)” 
+
         try {
             $CollectorIP = $Capture.Matches.Groups[1].Value
             $i| Add-Member -MemberType "NoteProperty" -Name "collectorIPAddress" -Value $CollectorIP
         } catch {
             Write-Warning "$($i.hostname) has no IPConfig Output"
         }
+
         $Result += $i
+
     }
+
     $Result
-}
+
+}#END: function Get-CollectorIPs
+
 function Get-CollectorGroupsWoCompanyID {
     $CollectorGroups = Get-ClientCollectorGroups
     $CollectorGroups | Where-Object {$_.companyID -eq $null -and $_.name -ne "@default"}
 }
+
 function Get-ResourceGroupsWoCompanyID {
     $ResourceGroups = Get-ClientResourceGroups
     $ResourceGroups | Where-Object {$_.companyID -eq $null}
 }
+
 function Get-DashboardGroupsWoCRG {
 
 }
+
 function Get-CollectorGroupsWoCRG {
 
 }
+
 function Get-MapGroupsWoCRG {
 
 }
+
 function Get-ReportGroupsWoCRG {
 
 }
+
 function Get-RolesWoCRG {
 
 }
+
 function Get-ResourcesWiPubIP {
     $Resources = Get-ClientResources
     $Resources | Where-Object { ($_.name -match "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}") -and ($_.name -notmatch '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') -and ($_.collectorDescription -ne "Cloud Collector")} 
+}
+
+# Use available handshake protcols
+[Net.ServicePointManager]::SecurityProtocol = 
+[enum]::GetNames([Net.SecurityProtocolType]) | Foreach-Object {
+    [Net.SecurityProtocolType]::$_
 }
