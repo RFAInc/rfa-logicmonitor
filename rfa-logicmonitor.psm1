@@ -1,13 +1,19 @@
-# All below copied from PSExcel module, with the DLL part removed. 
-
 # Get public and private function definition files.
 $PrivateFilePaths = @()
-$Private = $PrivateFilePaths | %{Get-Item $_ -ErrorAction SilentlyContinue}
+$Private = $PrivateFilePaths | %{Join-Path $PSScriptRoot $_} | %{Get-Item $_ }
+#write-debug "private" -debug
+
+#$RelativeCredPath = (Join-Path 'creds' 'lm-api-creds.ps1')
+#$FullCredPath = (Join-Path $PSScriptRoot $CredPath)
+
+
 $PublicFilePaths = @(
-    '.\api-functions.ps1'
-    '.\modules\rfa-logicmonitor.ps1'
+    'api-functions.ps1'
+    (Join-Path 'modules' 'rfa-logicmonitor.ps1')
 )
-$Public = $PublicFilePaths | %{Get-Item $_ -ErrorAction SilentlyContinue}
+$Public = $PublicFilePaths | %{Join-Path $PSScriptRoot $_} | %{Get-Item $_ }
+#write-debug "public" -debug
+
 $PublicFunctions = @(
     'Invoke-LomoApi'
     'Invoke-LMAPI'
@@ -54,8 +60,17 @@ Foreach ($import in @($Public + $Private)) {
         Write-Error "Failed to import function $($import.fullname): $_"
     }
 }
-    
+
+
 #Create some aliases, export public functions
-#Export-ModuleMember -Function $($Public | Select -ExpandProperty BaseName) -Alias *
-Export-ModuleMember -Function $PublicFunctions -Alias *
+#Export-ModuleMember -Function ($PublicFunctions) -Alias *
+#$PublicFunctions | %{ Export-ModuleMember -Function $_ -Alias * }
+
+
+#Load Creds
+$RelativeCredPath = Join-Path 'creds' 'lm-api-creds.ps1'
+$FullCredPath = Join-Path $PSScriptRoot $RelativeCredPath
+#write-host $FullCredPath
+#Test-Path $FullCredPath
+#write-debug "cred" -debug
 
