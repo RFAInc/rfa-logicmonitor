@@ -3,7 +3,7 @@
 $CompanyRecords = @()
 
 # Define the regex pattern for illegal characters for company name (each separated by "|" or char
-$ptnCompanyIllegalChars = '\/|\\'
+$ptnCompanyIllegalChars = '\/|\\|\,'
 # These will be replaced with a hyphen "-"
 
 
@@ -33,7 +33,7 @@ for ($i=1; $strCompany; $i++) {
         # Add to array
         $CompanyRecords += [PSCustomObject]@{
             companyID = $thisCompany.ExternalID
-            companyName = $thisCompany.Company -replace $ptnCompanyIllegalChars,'-'
+            companyName = $thisCompany.Company -replace $ptnCompanyIllegalChars,''
             companyLocations = ($Locations -join ';')
         }
     }
