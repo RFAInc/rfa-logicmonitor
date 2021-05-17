@@ -1,5 +1,10 @@
 #import credentials
-. ./creds/lm-api-creds.ps1
+$credPath = './creds/lm-api-creds.ps1'
+if (Test-Path $credPath) {} else {
+    Write-Warning "You must be in the module root folder!"
+    exit
+}
+. $credPath
 $company = 'rfa' # should not ever change (top level of our instance)
 $csvfile = "./csvs/companies.csv" # Can be changed, but easier to overwrite this file each time
 $desiredCloneGroup = "Categories" # Should not change unless we alter our group structure
